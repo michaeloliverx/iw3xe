@@ -198,6 +198,7 @@ struct DxGlobals
 };
 
 struct menuDef_t;
+struct itemDef_s;
 
 struct UiContext_cursor
 {

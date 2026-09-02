@@ -220,6 +220,13 @@ static auto UI_DrawTextExt =
     reinterpret_cast<void (*)(const ScreenPlacement *scrPlace, const char *text, int maxChars, Font_s *font, double x,
                               double y, int horzAlign, int vertAlign, double scale, const float *color, int style)>(
         0x821EB858);
+typedef int (*UI_FeederCount_t)(int localClientNum, itemDef_s *item, float feederID);
+static UI_FeederCount_t UI_FeederCount = reinterpret_cast<UI_FeederCount_t>(0x821EED28);
+typedef const char *(*UI_FeederItemText_t)(int localClientNum, itemDef_s *item, float feederID, int index,
+                                           unsigned int column, Material **handle);
+static UI_FeederItemText_t UI_FeederItemText = reinterpret_cast<UI_FeederItemText_t>(0x821EDFB0);
+typedef void (*UI_FeederSelection_t)(int localClientNum, float feederID, itemDef_s *item, int index);
+static UI_FeederSelection_t UI_FeederSelection = reinterpret_cast<UI_FeederSelection_t>(0x821EBE50);
 static auto UI_OpenMenu = reinterpret_cast<void (*)(int localClientNum, const char *menuName)>(0x821EA1E0);
 static auto UI_Refresh = reinterpret_cast<void (*)(int localClientNum)>(0x821F2F28);
 static auto UI_SafeTranslateString = reinterpret_cast<const char *(*)(char *reference)>(0x821ECA78);

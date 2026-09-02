@@ -117,6 +117,7 @@
       <ClCompile Include="src\game\iw3\mp\components\gsc_methods.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\pm.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\image_loader.cpp" />
+      <ClCompile Include="src\game\iw3\mp\components\ui_feeder.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\mpsp.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\scr_parser.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\stats.cpp" />
@@ -257,6 +258,7 @@
       <ClInclude Include="src\game\iw3\mp\components\gsc_fields.h" />
       <ClInclude Include="src\game\iw3\mp\components\gsc_methods.h" />
       <ClInclude Include="src\game\iw3\mp\components\pm.h" />
+      <ClInclude Include="src\game\iw3\mp\components\ui_feeder.h" />
       <ClInclude Include="src\game\iw3\mp\components\scr_parser.h" />
       <ClInclude Include="src\game\iw3\mp\components\stats.h" />
       <ClInclude Include="src\game\iw3\mp\main.h" />

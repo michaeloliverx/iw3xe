@@ -15,6 +15,7 @@
 #include "components/scr_parser.h"
 #include "components/stats.h"
 #include "components/sv_bots.h"
+#include "components/ui_feeder.h"
 #include "common/config.h"
 #include "main.h"
 
@@ -64,6 +65,7 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     RegisterModule(new scr_parser());
     RegisterModule(new stats());
     RegisterModule(new sv_bots());
+    RegisterModule(new ui_feeder());
 }
 
 IW3_MP_Plugin::~IW3_MP_Plugin()
