@@ -11,6 +11,12 @@ class Stats : public Module
   public:
     Stats();
     ~Stats();
+
+  private:
+    friend class UIScript;
+
+    static void LoadStatsScript(int localClientNum, const char **args);
+    static void OpenCreateAClassScript(int localClientNum, const char **args);
 };
 } // namespace mp
 } // namespace iw3

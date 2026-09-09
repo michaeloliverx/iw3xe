@@ -17,6 +17,8 @@ class ModList : public Module
     static std::string ResolvePath(const char *relativePath);
 
   private:
+    friend class UIScript;
+
     static std::string GetActivePath();
     static bool RunMod(const char *name);
     static void ClearMods();

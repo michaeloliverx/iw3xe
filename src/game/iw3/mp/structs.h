@@ -229,6 +229,14 @@ struct UIFeederCallbacks
     UIFeederSelect_t select;
 };
 
+typedef void (*UIScriptHandler_t)(int localClientNum, const char **args);
+
+struct UIScriptEntry
+{
+    const char *name;
+    UIScriptHandler_t callback;
+};
+
 struct UiContext_cursor
 {
     float x;

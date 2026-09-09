@@ -18,6 +18,11 @@ class UIFeeder : public Module
     static void OnDvarInit();
 
   private:
+    friend class UIScript;
+
+    static void ApplyInitialMapScript(int localClientNum, const char **args);
+    static void ApplyMapScript(int localClientNum, const char **args);
+
     static int UI_FeederCount_Hook(int localClientNum, itemDef_s *item, float feederID);
     static const char *UI_FeederItemText_Hook(int localClientNum, itemDef_s *item, float feederID, int index,
                                               unsigned int column, Material **handle);

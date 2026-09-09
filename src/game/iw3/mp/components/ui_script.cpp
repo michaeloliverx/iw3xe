@@ -1,11 +1,24 @@
 #include "pch.h"
 #include "ui_script.h"
 
+#include "mods.h"
+#include "stats.h"
+#include "ui_feeder.h"
+
 namespace iw3
 {
 namespace mp
 {
-std::map<std::string, UIScriptHandler_t> UIScript::Scripts;
+const UIScriptEntry UIScript::Scripts[] = {
+    {"LoadMods", ModList::LoadModsScript},
+    {"RunMod", ModList::RunModScript},
+    {"ClearMods", ModList::ClearModsScript},
+    {"LoadOfflineStats", Stats::LoadStatsScript},
+    {"OpenOfflineCreateAClass", Stats::OpenCreateAClassScript},
+    {"ApplyInitialMap", UIFeeder::ApplyInitialMapScript},
+    {"ApplyMap", UIFeeder::ApplyMapScript},
+};
+
 Detour UIScript::UI_RunMenuScript_Detour;
 
 UIScript::UIScript()
@@ -17,15 +30,6 @@ UIScript::UIScript()
 UIScript::~UIScript()
 {
     UI_RunMenuScript_Detour.Remove();
-    Scripts.clear();
-}
-
-void UIScript::Add(const char *name, UIScriptHandler_t callback)
-{
-    if (!name || !*name || !callback)
-        return;
-
-    Scripts[name] = callback;
 }
 
 bool UIScript::Run(int localClientNum, const char **args)
@@ -38,12 +42,11 @@ bool UIScript::Run(int localClientNum, const char **args)
     if (!String_Parse(&customArgs, name, static_cast<int>(sizeof(name))))
         return false;
 
-    for (std::map<std::string, UIScriptHandler_t>::const_iterator script = Scripts.begin(); script != Scripts.end();
-         ++script)
+    for (size_t i = 0; i < ARRAYSIZE(Scripts); ++i)
     {
-        if (I_stricmp(name, script->first.c_str()) == 0)
+        if (I_stricmp(name, Scripts[i].name) == 0)
         {
-            script->second(localClientNum, &customArgs);
+            Scripts[i].callback(localClientNum, &customArgs);
             return true;
         }
     }

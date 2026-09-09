@@ -3,7 +3,6 @@
 
 #include "fastfiles.h"
 #include "ui_feeder.h"
-#include "ui_script.h"
 
 namespace iw3
 {
@@ -67,9 +66,6 @@ dvar_s *ModList::FsGame = nullptr;
 
 ModList::ModList()
 {
-    UIScript::Add("LoadMods", LoadModsScript);
-    UIScript::Add("RunMod", RunModScript);
-    UIScript::Add("ClearMods", ClearModsScript);
     UIFeeder::Add(MODS_FEEDER_ID, GetItemCount, GetItemText, Select);
 }
 

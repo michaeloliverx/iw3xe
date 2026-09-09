@@ -2,7 +2,6 @@
 #include "ui_feeder.h"
 
 #include "fastfiles.h"
-#include "ui_script.h"
 
 namespace iw3
 {
@@ -144,12 +143,14 @@ void SelectUsermap(int index)
     DbgPrint("[codxe][IW3][UIFeeder] Selected usermap: %s\n", usermaps[selectedUsermap].name.c_str());
 }
 
-void ApplyInitialMapScript(int /*localClientNum*/, const char ** /*args*/)
+} // namespace
+
+void UIFeeder::ApplyInitialMapScript(int /*localClientNum*/, const char ** /*args*/)
 {
     ScanUsermaps();
 }
 
-void ApplyMapScript(int /*localClientNum*/, const char ** /*args*/)
+void UIFeeder::ApplyMapScript(int /*localClientNum*/, const char ** /*args*/)
 {
     EnsureUsermapsScanned();
     if (selectedUsermap < 0 || selectedUsermap >= static_cast<int>(usermaps.size()))
@@ -175,7 +176,6 @@ void ApplyMapScript(int /*localClientNum*/, const char ** /*args*/)
 
     DbgPrint("[codxe][IW3][UIFeeder] Set selected usermap: %s\n", usermap.name.c_str());
 }
-} // namespace
 
 std::map<float, UIFeederCallbacks> UIFeeder::Feeders;
 std::map<float, int> UIFeeder::SelectedIndices;
@@ -314,8 +314,6 @@ void UIFeeder::Item_ListBox_Scroll_Hook(int localClientNum, itemDef_s *item, int
 UIFeeder::UIFeeder()
 {
     Add(USERMAPS_FEEDER_ID, GetUsermapCount, GetUsermapText, SelectUsermap);
-    UIScript::Add("ApplyInitialMap", ApplyInitialMapScript);
-    UIScript::Add("ApplyMap", ApplyMapScript);
 
     UI_FeederCount_Detour = Detour(UI_FeederCount, UI_FeederCount_Hook);
     UI_FeederCount_Detour.Install();

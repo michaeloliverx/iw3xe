@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "command.h"
 #include "stats.h"
-#include "ui_script.h"
 
 namespace iw3
 {
@@ -493,31 +492,6 @@ bool IsOfflineGame()
     return Dvar_GetBool("systemlink") || Dvar_GetBool("splitscreen");
 }
 
-void LoadStatsScript(int localClientNum, const char ** /*args*/)
-{
-    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
-    if (!IsValidControllerIndex(controllerIndex))
-    {
-        Com_PrintError(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid controller %i for local client %i\n",
-                       controllerIndex, localClientNum);
-        return;
-    }
-
-    LoadOrInitializeStats(controllerIndex);
-}
-
-void OpenCreateAClassScript(int localClientNum, const char **args)
-{
-    LoadStatsScript(localClientNum, args);
-
-    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
-    if (!IsValidControllerIndex(controllerIndex))
-        return;
-
-    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, "set ui_cac_ingame 0\n");
-    UI_OpenMenu(localClientNum, "live_cac_popup");
-}
-
 void LiveStorage_ReadStats_Hook(unsigned int controllerIndex)
 {
     if (XUserGetSigninState(controllerIndex) != eXUserSigninState_SignedInToLive)
@@ -541,11 +515,34 @@ void LiveStorage_UploadStats_Hook(unsigned int controllerIndex)
 }
 } // namespace
 
+void Stats::LoadStatsScript(int localClientNum, const char ** /*args*/)
+{
+    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
+    if (!IsValidControllerIndex(controllerIndex))
+    {
+        Com_PrintError(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid controller %i for local client %i\n",
+                       controllerIndex, localClientNum);
+        return;
+    }
+
+    LoadOrInitializeStats(controllerIndex);
+}
+
+void Stats::OpenCreateAClassScript(int localClientNum, const char **args)
+{
+    LoadStatsScript(localClientNum, args);
+
+    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
+    if (!IsValidControllerIndex(controllerIndex))
+        return;
+
+    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, "set ui_cac_ingame 0\n");
+    UI_OpenMenu(localClientNum, "live_cac_popup");
+}
+
 Stats::Stats()
 {
     command::add("unlockstats", Cmd_UnlockStats_f);
-    UIScript::Add("LoadOfflineStats", LoadStatsScript);
-    UIScript::Add("OpenOfflineCreateAClass", OpenCreateAClassScript);
 
     LiveStorage_ReadStats_Detour = Detour(LiveStorage_ReadStats, LiveStorage_ReadStats_Hook);
     LiveStorage_ReadStats_Detour.Install();
