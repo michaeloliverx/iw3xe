@@ -11,6 +11,8 @@ class ui_feeder : public Module
   public:
     ui_feeder();
     ~ui_feeder();
+
+    static void OnDvarInit();
 };
 } // namespace mp
 } // namespace iw3

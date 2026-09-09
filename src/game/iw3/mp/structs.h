@@ -198,7 +198,24 @@ struct DxGlobals
 };
 
 struct menuDef_t;
-struct itemDef_s;
+
+struct itemDef_s
+{
+    unsigned char _pad0[0x178];
+    float special;
+    int cursorPos[4];
+    void *typeData;
+    unsigned char _pad1[0x44];
+};
+static_assert(sizeof(itemDef_s) == 0x1D4, "");
+static_assert(offsetof(itemDef_s, special) == 0x178, "");
+static_assert(offsetof(itemDef_s, cursorPos) == 0x17C, "");
+
+struct FeederEntry
+{
+    std::string name;
+    std::string displayName;
+};
 
 struct UiContext_cursor
 {
@@ -2078,7 +2095,16 @@ static_assert(sizeof(server_t) == 392292, "");
 enum DvarFlags : unsigned __int16
 {
     DVAR_FLAG_NONE = 0x0,
+    DVAR_ARCHIVE = 0x1,
     DVAR_CODINFO = 0x100, // On change, this is sent to all clients (if you are host)
+};
+
+enum DvarSetSource : __int32
+{
+    DVAR_SOURCE_INTERNAL = 0x0,
+    DVAR_SOURCE_EXTERNAL = 0x1,
+    DVAR_SOURCE_SCRIPT = 0x2,
+    DVAR_SOURCE_DEVGUI = 0x3,
 };
 
 union DvarValue
@@ -3412,11 +3438,30 @@ struct XFile
     unsigned int blockSize[MAX_XFILE_COUNT];
 };
 
+enum DBZoneFlags : __int32
+{
+    DB_ZONE_NONE = 0x0,
+    DB_ZONE_COMMON = 0x1,
+    DB_ZONE_GAME = 0x2,
+    DB_ZONE_LOAD = 0x4,
+    DB_ZONE_PATCH = 0x8,
+    DB_ZONE_DEV = 0x10,
+    DB_ZONE_MOD = 0x20,
+};
+
 struct XZoneName
 {
     char name[64];
     int flags;
 };
+
+struct XZoneInfo
+{
+    const char *name;
+    int allocFlags;
+    int freeFlags;
+};
+static_assert(sizeof(XZoneInfo) == 0xC, "");
 
 struct StreamDelayInfo
 {
