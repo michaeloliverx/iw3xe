@@ -137,8 +137,7 @@ static auto Dvar_RegisterString =
     reinterpret_cast<dvar_s *(*)(const char *dvarName, const char *value, DvarFlags flags, const char *description)>(
         0x821D1040);
 typedef void (*Dvar_SetStringFromSource_t)(dvar_s *dvar, const char *value, DvarSetSource source);
-static Dvar_SetStringFromSource_t Dvar_SetStringFromSource =
-    reinterpret_cast<Dvar_SetStringFromSource_t>(0x821D4148);
+static Dvar_SetStringFromSource_t Dvar_SetStringFromSource = reinterpret_cast<Dvar_SetStringFromSource_t>(0x821D4148);
 
 typedef gentity_s *(*GetEntity_t)(scr_entref_t entref);
 static GetEntity_t GetEntity = reinterpret_cast<GetEntity_t>(0x82257F30);
@@ -162,8 +161,7 @@ static Item_ListBox_SetCursorPos_t Item_ListBox_SetCursorPos =
 static auto Menus_OpenByName = reinterpret_cast<void (*)(UiContext *dc, const char *menuName)>(0x821E5B38);
 
 typedef void (*Party_SetDisplayMapName_t)(const char *rawMapName);
-static Party_SetDisplayMapName_t Party_SetDisplayMapName =
-    reinterpret_cast<Party_SetDisplayMapName_t>(0x822BFAB8);
+static Party_SetDisplayMapName_t Party_SetDisplayMapName = reinterpret_cast<Party_SetDisplayMapName_t>(0x822BFAB8);
 
 static auto PM_FoliageSounds = reinterpret_cast<void (*)(pmove_t *pm)>(0x82335E90);
 static auto Pmove = reinterpret_cast<void (*)(pmove_t *pm)>(0x8233B470);

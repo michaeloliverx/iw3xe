@@ -55,8 +55,8 @@ void DrawBranding()
     }
     else
     {
-        _snprintf_s(brandingWithBuild, ARRAYSIZE(brandingWithBuild), _TRUNCATE, "CoD ^2Xe^7 %s\nMod: %s",
-                    GIT_VERSION, activeMod.c_str());
+        _snprintf_s(brandingWithBuild, ARRAYSIZE(brandingWithBuild), _TRUNCATE, "CoD ^2Xe^7 %s\nMod: %s", GIT_VERSION,
+                    activeMod.c_str());
     }
 
     float color[4] = {1.0, 1.0, 1.0, 0.4};

@@ -14,8 +14,8 @@ char *TryLoadOverride(const char *scriptPath, const char *overridePath, Allocate
     if (!scriptPath || !overridePath || !*overridePath || !allocateTempMemory)
         return nullptr;
 
-    HANDLE file = CreateFileA(overridePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE file = CreateFileA(overridePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                              FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE)
         return nullptr;
 
