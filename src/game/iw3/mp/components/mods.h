@@ -36,7 +36,7 @@ class ModList : public Module
     static std::vector<FeederEntry> Mods;
     static int CurrentMod;
     static bool ModsScanned;
-    static dvar_s *FsGame;
+    static dvar_s *fs_game;
 };
 } // namespace mp
 } // namespace iw3

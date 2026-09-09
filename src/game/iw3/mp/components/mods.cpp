@@ -62,7 +62,7 @@ std::string ReadDisplayName(const std::string &path, const std::string &fallback
 std::vector<FeederEntry> ModList::Mods;
 int ModList::CurrentMod = 0;
 bool ModList::ModsScanned = false;
-dvar_s *ModList::FsGame = nullptr;
+dvar_s *ModList::fs_game = nullptr;
 
 ModList::ModList()
 {
@@ -71,15 +71,15 @@ ModList::ModList()
 
 void ModList::OnDvarInit()
 {
-    FsGame = Dvar_RegisterString("fs_game", "", DVAR_ARCHIVE, "The active mod directory");
+    fs_game = Dvar_RegisterString("fs_game", "", DVAR_ARCHIVE, "The active mod directory");
 }
 
 std::string ModList::GetActiveName()
 {
-    if (!FsGame || !FsGame->current.string)
+    if (!fs_game || !fs_game->current.string)
         return std::string();
 
-    const char *value = FsGame->current.string;
+    const char *value = fs_game->current.string;
     const size_t prefixLength = std::strlen(FS_GAME_PREFIX);
     if (I_strnicmp(value, FS_GAME_PREFIX, static_cast<int>(prefixLength)) != 0)
         return std::string();
@@ -105,7 +105,7 @@ std::string ModList::ResolvePath(const char *relativePath)
 
 bool ModList::RunMod(const char *name)
 {
-    if (!FsGame || !IsSafeModName(name))
+    if (!fs_game || !IsSafeModName(name))
         return false;
 
     const std::string modPath = filesystem::JoinPath(MODS_DIRECTORY, name);
@@ -117,7 +117,7 @@ bool ModList::RunMod(const char *name)
 
     const std::string fsGame = BuildFsGame(name);
     DbgPrint("[codxe][IW3][ModList] Activating %s\n", fsGame.c_str());
-    Dvar_SetStringFromSource(FsGame, fsGame.c_str(), DVAR_SOURCE_INTERNAL);
+    Dvar_SetStringFromSource(fs_game, fsGame.c_str(), DVAR_SOURCE_INTERNAL);
     FastFiles::ReloadModZone();
     Cbuf_AddText(0, "exec mod.cfg\n");
     return true;
@@ -125,12 +125,12 @@ bool ModList::RunMod(const char *name)
 
 void ModList::ClearMods()
 {
-    if (!FsGame)
+    if (!fs_game)
         return;
 
     DbgPrint("[codxe][IW3][ModList] Clearing %s\n",
-             FsGame->current.string && *FsGame->current.string ? FsGame->current.string : "<none>");
-    Dvar_SetStringFromSource(FsGame, "", DVAR_SOURCE_INTERNAL);
+             fs_game->current.string && *fs_game->current.string ? fs_game->current.string : "<none>");
+    Dvar_SetStringFromSource(fs_game, "", DVAR_SOURCE_INTERNAL);
     FastFiles::ReloadModZone();
 }
 
