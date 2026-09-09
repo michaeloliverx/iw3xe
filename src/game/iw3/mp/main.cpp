@@ -34,16 +34,17 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     // Special modules need to be registered first
     RegisterModule(new Events());
     RegisterModule(new command());
-    RegisterModule(new ui_script());
+    RegisterModule(new UIScript());
+    RegisterModule(new UIFeeder());
 
     RegisterModule(new cg());
     RegisterModule(new cj_tas());
     RegisterModule(new clipmap());
     RegisterModule(new cmds());
     RegisterModule(new console());
-    RegisterModule(new mods());
+    RegisterModule(new ModList());
     RegisterModule(new offline_stats());
-    RegisterModule(new fastfiles());
+    RegisterModule(new FastFiles());
     RegisterModule(new GSC());
     RegisterModule(new GSCFields());
     RegisterModule(new GSCFunctions());
@@ -53,7 +54,6 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     RegisterModule(new scr_parser());
     RegisterModule(new stats());
     RegisterModule(new sv_bots());
-    RegisterModule(new ui_feeder());
 }
 
 IW3_MP_Plugin::~IW3_MP_Plugin()

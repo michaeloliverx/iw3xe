@@ -6,19 +6,20 @@ namespace iw3
 {
 namespace mp
 {
-class fastfiles : public Module
+class FastFiles : public Module
 {
   public:
-    fastfiles();
-    ~fastfiles();
+    FastFiles();
+    ~FastFiles();
 
-    static bool HasModFastfile();
-    static std::string GetModFastfilePath();
     static const char *GetUsermapsDirectory();
     static std::string GetUsermapFastfilePath(const char *zoneName);
     static void ReloadModZone();
 
   private:
+    static bool HasModFastfile();
+    static std::string GetModFastfilePath();
+
     static Detour DB_BuildOSPath_Detour;
     static int DB_BuildOSPath_Hook(const char *zoneName, unsigned int size, char *filename);
 

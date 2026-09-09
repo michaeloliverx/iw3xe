@@ -59,9 +59,9 @@ const EventHandler dvarInitHandlers[] = {
     cg::OnDvarInit,
     cj_tas::OnDvarInit,
     clipmap::OnDvarInit,
-    mods::OnDvarInit,
+    ModList::OnDvarInit,
     pm::OnDvarInit,
-    ui_feeder::OnDvarInit,
+    UIFeeder::OnDvarInit,
 };
 
 const EventHandler cmdInitHandlers[] = {

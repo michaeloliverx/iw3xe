@@ -120,7 +120,7 @@ bool Cmd_ExecFromFastFile_Hook(int localClientNum, int controllerIndex, const ch
                                                                                          controllerIndex, filename);
     };
 
-    const std::string path = mods::ResolvePath(filename);
+    const std::string path = ModList::ResolvePath(filename);
     if (path.empty())
         return callOriginal();
 

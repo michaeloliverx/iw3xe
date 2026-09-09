@@ -17,7 +17,7 @@ char *Scr_AddSourceBuffer_Hook(const char *filename, const char *extFilename, co
                                                                                        archive);
     };
 
-    const std::string overridePath = mods::ResolvePath(extFilename);
+    const std::string overridePath = ModList::ResolvePath(extFilename);
     char *contents =
         gsc_loader::TryLoadOverride(extFilename, overridePath.c_str(), Hunk_AllocateTempMemoryHighInternal);
     return contents ? contents : callOriginal();

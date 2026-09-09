@@ -188,8 +188,8 @@ void offline_stats::LiveStorage_UploadStats_Hook(unsigned int controllerIndex)
 
 offline_stats::offline_stats()
 {
-    ui_script::add("LoadOfflineStats", LoadStatsScript);
-    ui_script::add("OpenOfflineCreateAClass", OpenCreateAClassScript);
+    UIScript::Add("LoadOfflineStats", LoadStatsScript);
+    UIScript::Add("OpenOfflineCreateAClass", OpenCreateAClassScript);
 
     LiveStorage_ReadStats_Detour = Detour(LiveStorage_ReadStats, LiveStorage_ReadStats_Hook);
     LiveStorage_ReadStats_Detour.Install();

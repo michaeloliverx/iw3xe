@@ -6,25 +6,36 @@ namespace iw3
 {
 namespace mp
 {
-class mods : public Module
+class ModList : public Module
 {
   public:
-    mods();
+    ModList();
 
     static void OnDvarInit();
 
-    static const char *GetModsDirectory();
     static std::string GetActiveName();
-    static std::string GetActivePath();
     static std::string ResolvePath(const char *relativePath);
 
-    static bool Activate(const char *name);
-    static void Clear();
-
   private:
+    static std::string GetActivePath();
+    static bool RunMod(const char *name);
+    static void ClearMods();
+
+    static void ScanMods();
+    static void EnsureModsScanned();
+    static int GetItemCount();
+    static const char *GetItemText(int index);
+    static void Select(int index);
+
+    static void LoadModsScript(int localClientNum, const char **args);
+    static void RunModScript(int localClientNum, const char **args);
+    static void ClearModsScript(int localClientNum, const char **args);
     static void ReloadCommand();
 
-    static dvar_s *fs_game;
+    static std::vector<FeederEntry> Mods;
+    static int CurrentMod;
+    static bool ModsScanned;
+    static dvar_s *FsGame;
 };
 } // namespace mp
 } // namespace iw3

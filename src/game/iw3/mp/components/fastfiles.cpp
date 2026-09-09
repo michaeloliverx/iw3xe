@@ -16,7 +16,6 @@ const char *const CODXE_UI_ZONE = "codxe_ui_mp";
 const char *const CODXE_ZONE_DIRECTORY = "game:\\_codxe\\zone";
 const char *const USERMAPS_DIRECTORY = "game:\\_codxe\\usermaps";
 const char *const FASTFILE_EXTENSION = ".ff";
-const unsigned int MAX_ZONE_COUNT = 16;
 const unsigned int CODXE_MENULIST_POOL_SIZE = 256;
 const unsigned int CODXE_MENU_POOL_SIZE = 1024;
 const unsigned int CODXE_LOCALIZE_POOL_SIZE = 14000;
@@ -41,8 +40,7 @@ bool IsSafeZoneName(const char *name)
 bool EndsWith(const std::string &value, const char *suffix)
 {
     const size_t suffixLength = std::strlen(suffix);
-    return value.length() >= suffixLength &&
-           I_stricmp(value.c_str() + value.length() - suffixLength, suffix) == 0;
+    return value.length() >= suffixLength && I_stricmp(value.c_str() + value.length() - suffixLength, suffix) == 0;
 }
 
 std::string GetCodxeZoneFastfilePath(const char *zoneName)
@@ -78,8 +76,7 @@ const XZoneInfo *FindZone(const XZoneInfo *zoneInfo, unsigned int zoneCount, con
 
 bool IsInitialZoneBatch(const XZoneInfo *zoneInfo, unsigned int zoneCount)
 {
-    return ContainsZone(zoneInfo, zoneCount, "code_post_gfx_mp") &&
-           ContainsZone(zoneInfo, zoneCount, "common_mp");
+    return ContainsZone(zoneInfo, zoneCount, "code_post_gfx_mp") && ContainsZone(zoneInfo, zoneCount, "common_mp");
 }
 
 void DisableFastfileAuth()
@@ -127,26 +124,26 @@ bool ReallocateUiAssetPools()
 }
 } // namespace
 
-Detour fastfiles::DB_BuildOSPath_Detour;
-Detour fastfiles::DB_LoadXAssets_Detour;
+Detour FastFiles::DB_BuildOSPath_Detour;
+Detour FastFiles::DB_LoadXAssets_Detour;
 
-bool fastfiles::HasModFastfile()
+bool FastFiles::HasModFastfile()
 {
     const std::string path = GetModFastfilePath();
     return !path.empty() && filesystem::FileExists(path.c_str());
 }
 
-std::string fastfiles::GetModFastfilePath()
+std::string FastFiles::GetModFastfilePath()
 {
-    return mods::ResolvePath(MOD_FASTFILE);
+    return ModList::ResolvePath(MOD_FASTFILE);
 }
 
-const char *fastfiles::GetUsermapsDirectory()
+const char *FastFiles::GetUsermapsDirectory()
 {
     return USERMAPS_DIRECTORY;
 }
 
-std::string fastfiles::GetUsermapFastfilePath(const char *zoneName)
+std::string FastFiles::GetUsermapFastfilePath(const char *zoneName)
 {
     if (!IsSafeZoneName(zoneName) || I_strnicmp(zoneName, "mp_", 3) != 0)
         return std::string();
@@ -163,7 +160,7 @@ std::string fastfiles::GetUsermapFastfilePath(const char *zoneName)
     return filesystem::JoinPath(usermapDirectory.c_str(), (filename + ".ff").c_str());
 }
 
-int fastfiles::DB_BuildOSPath_Hook(const char *zoneName, unsigned int size, char *filename)
+int FastFiles::DB_BuildOSPath_Hook(const char *zoneName, unsigned int size, char *filename)
 {
     if (zoneName && I_stricmp(zoneName, MOD_ZONE) == 0)
     {
@@ -189,7 +186,7 @@ int fastfiles::DB_BuildOSPath_Hook(const char *zoneName, unsigned int size, char
     return DB_BuildOSPath_Detour.GetOriginal<DB_BuildOSPath_t>()(zoneName, size, filename);
 }
 
-void fastfiles::DB_LoadXAssets_Hook(XZoneInfo *zoneInfo, unsigned int zoneCount, int sync)
+void FastFiles::DB_LoadXAssets_Hook(XZoneInfo *zoneInfo, unsigned int zoneCount, int sync)
 {
     auto original = DB_LoadXAssets_Detour.GetOriginal<DB_LoadXAssets_t>();
     const std::string codxeCommonFastfile = GetCodxeZoneFastfilePath(CODXE_COMMON_ZONE);
@@ -200,41 +197,33 @@ void fastfiles::DB_LoadXAssets_Hook(XZoneInfo *zoneInfo, unsigned int zoneCount,
                               stockCommonZone && !ContainsZone(zoneInfo, zoneCount, CODXE_COMMON_ZONE);
     const bool injectUi = codxeUiPoolsReady && filesystem::FileExists(codxeUiFastfile.c_str()) && stockUiZone &&
                           !ContainsZone(zoneInfo, zoneCount, CODXE_UI_ZONE);
-    const bool injectMod = HasModFastfile() && IsInitialZoneBatch(zoneInfo, zoneCount) &&
-                           !ContainsZone(zoneInfo, zoneCount, MOD_ZONE);
-    const unsigned int injectionCount = (injectCommon ? 1 : 0) + (injectUi ? 1 : 0) + (injectMod ? 1 : 0);
-    const bool hasCapacity = zoneCount <= MAX_ZONE_COUNT && injectionCount <= MAX_ZONE_COUNT - zoneCount;
-
-    if (injectionCount == 0 || !hasCapacity)
+    const bool injectMod =
+        HasModFastfile() && IsInitialZoneBatch(zoneInfo, zoneCount) && !ContainsZone(zoneInfo, zoneCount, MOD_ZONE);
+    if (!injectCommon && !injectUi && !injectMod)
     {
         original(zoneInfo, zoneCount, sync);
         return;
     }
 
-    XZoneInfo zones[MAX_ZONE_COUNT];
-    unsigned int outputZoneCount = 0;
+    std::vector<XZoneInfo> zones;
+    zones.reserve(zoneCount + 3);
 
     for (unsigned int i = 0; i < zoneCount; ++i)
     {
-        zones[outputZoneCount] = zoneInfo[i];
-        ++outputZoneCount;
+        zones.push_back(zoneInfo[i]);
 
         if (injectCommon && zoneInfo[i].name && I_stricmp(zoneInfo[i].name, "common_mp") == 0)
         {
-            zones[outputZoneCount].name = CODXE_COMMON_ZONE;
-            zones[outputZoneCount].allocFlags = stockCommonZone->allocFlags;
-            zones[outputZoneCount].freeFlags = stockCommonZone->freeFlags;
-            ++outputZoneCount;
+            XZoneInfo commonZone = {CODXE_COMMON_ZONE, stockCommonZone->allocFlags, stockCommonZone->freeFlags};
+            zones.push_back(commonZone);
 
             DbgPrint("[codxe][IW3][FastFiles] Loading common fastfile: %s\n", codxeCommonFastfile.c_str());
         }
 
         if (injectUi && zoneInfo[i].name && I_stricmp(zoneInfo[i].name, "ui_mp") == 0)
         {
-            zones[outputZoneCount].name = CODXE_UI_ZONE;
-            zones[outputZoneCount].allocFlags = stockUiZone->allocFlags;
-            zones[outputZoneCount].freeFlags = stockUiZone->freeFlags;
-            ++outputZoneCount;
+            XZoneInfo uiZone = {CODXE_UI_ZONE, stockUiZone->allocFlags, stockUiZone->freeFlags};
+            zones.push_back(uiZone);
 
             DbgPrint("[codxe][IW3][FastFiles] Loading UI fastfile: %s\n", codxeUiFastfile.c_str());
         }
@@ -242,18 +231,16 @@ void fastfiles::DB_LoadXAssets_Hook(XZoneInfo *zoneInfo, unsigned int zoneCount,
 
     if (injectMod)
     {
-        zones[outputZoneCount].name = MOD_ZONE;
-        zones[outputZoneCount].allocFlags = DB_ZONE_MOD;
-        zones[outputZoneCount].freeFlags = 0;
-        ++outputZoneCount;
+        XZoneInfo modZone = {MOD_ZONE, DB_ZONE_MOD, 0};
+        zones.push_back(modZone);
 
         DbgPrint("[codxe][IW3][FastFiles] Loading startup mod fastfile: %s\n", GetModFastfilePath().c_str());
     }
 
-    original(zones, outputZoneCount, sync);
+    original(zones.data(), static_cast<unsigned int>(zones.size()), sync);
 }
 
-void fastfiles::ReloadModZone()
+void FastFiles::ReloadModZone()
 {
     XZoneInfo zones[2];
     unsigned int zoneCount = 1;
@@ -281,7 +268,7 @@ void fastfiles::ReloadModZone()
     DbgPrint("[codxe][IW3][FastFiles] Mod zone reload complete\n");
 }
 
-fastfiles::fastfiles()
+FastFiles::FastFiles()
 {
     DisableFastfileAuth();
 
@@ -294,7 +281,7 @@ fastfiles::fastfiles()
     DB_LoadXAssets_Detour.Install();
 }
 
-fastfiles::~fastfiles()
+FastFiles::~FastFiles()
 {
     DB_LoadXAssets_Detour.Remove();
     DB_BuildOSPath_Detour.Remove();

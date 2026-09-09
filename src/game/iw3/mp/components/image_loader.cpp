@@ -919,7 +919,7 @@ bool Image_Replace_Cube(GfxImage *image, const DDSImage &ddsImage)
 void Image_Replace(GfxImage *image)
 {
     const std::string relativePath = GetImageRelativePath(image->name);
-    const std::string replacement_path = mods::ResolvePath(relativePath.c_str());
+    const std::string replacement_path = ModList::ResolvePath(relativePath.c_str());
 
     if (!filesystem::FileExists(replacement_path.c_str()))
     {
@@ -1083,7 +1083,7 @@ bool R_StreamLoadImageReplacement(const char *filename, unsigned int bytesToRead
         return false;
 
     const std::string relativePath = GetImageRelativePath(image->name);
-    const std::string replacementPath = mods::ResolvePath(relativePath.c_str());
+    const std::string replacementPath = ModList::ResolvePath(relativePath.c_str());
     if (!filesystem::FileExists(replacementPath.c_str()))
         return false;
 

@@ -48,7 +48,7 @@ void R_DrawAllDynEnt_Hook(const GfxViewInfo *viewInfo)
 void DrawBranding()
 {
     char brandingWithBuild[256];
-    const std::string activeMod = mods::GetActiveName();
+    const std::string activeMod = ModList::GetActiveName();
     if (activeMod.empty())
     {
         _snprintf_s(brandingWithBuild, ARRAYSIZE(brandingWithBuild), _TRUNCATE, "CoD ^2Xe^7 %s", GIT_VERSION);

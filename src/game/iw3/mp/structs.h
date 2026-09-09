@@ -197,6 +197,7 @@ struct DxGlobals
     volatile int showDirtyDiscError;
 };
 
+struct Material;
 struct menuDef_t;
 
 struct itemDef_s
@@ -215,6 +216,17 @@ struct FeederEntry
 {
     std::string name;
     std::string displayName;
+};
+
+typedef int (*UIFeederGetItemCount_t)();
+typedef const char *(*UIFeederGetItemText_t)(int index);
+typedef void (*UIFeederSelect_t)(int index);
+
+struct UIFeederCallbacks
+{
+    UIFeederGetItemCount_t getItemCount;
+    UIFeederGetItemText_t getItemText;
+    UIFeederSelect_t select;
 };
 
 struct UiContext_cursor
