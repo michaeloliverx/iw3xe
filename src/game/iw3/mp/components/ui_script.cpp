@@ -14,7 +14,6 @@ const UIScriptEntry UIScript::Scripts[] = {
     {"RunMod", ModList::RunModScript},
     {"ClearMods", ModList::ClearModsScript},
     {"LoadOfflineStats", Stats::LoadStatsScript},
-    {"OpenOfflineCreateAClass", Stats::OpenCreateAClassScript},
     {"ApplyInitialMap", UIFeeder::ApplyInitialMapScript},
     {"ApplyMap", UIFeeder::ApplyMapScript},
 };

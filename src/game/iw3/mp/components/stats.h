@@ -16,7 +16,6 @@ class Stats : public Module
     friend class UIScript;
 
     static void LoadStatsScript(int localClientNum, const char **args);
-    static void OpenCreateAClassScript(int localClientNum, const char **args);
 };
 } // namespace mp
 } // namespace iw3

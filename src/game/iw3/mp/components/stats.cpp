@@ -528,18 +528,6 @@ void Stats::LoadStatsScript(int localClientNum, const char ** /*args*/)
     LoadOrInitializeStats(controllerIndex);
 }
 
-void Stats::OpenCreateAClassScript(int localClientNum, const char **args)
-{
-    LoadStatsScript(localClientNum, args);
-
-    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
-    if (!IsValidControllerIndex(controllerIndex))
-        return;
-
-    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, "set ui_cac_ingame 0\n");
-    UI_OpenMenu(localClientNum, "live_cac_popup");
-}
-
 Stats::Stats()
 {
     command::add("unlockstats", Cmd_UnlockStats_f);
