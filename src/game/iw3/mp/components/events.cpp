@@ -159,18 +159,21 @@ Detour Events::UI_Refresh_Detour;
 
 XAssetEntry *Events::DB_LinkXAssetEntry_Hook(XAsset *asset, int allowOverride)
 {
-    // During the deferred override pass, asset points at the XAsset member at the start of the pending XAssetEntry.
-    // g_zoneIndex may already refer to a later zone, so recover the asset's original zone from the entry itself.
+    // Deferred links pass an asset stored at the start of an XAssetEntry.
+    // g_zoneIndex may point to the next zone, so use the zone saved in that entry.
     const unsigned int zoneIndex = allowOverride ? reinterpret_cast<XAssetEntry *>(asset)->zoneIndex : *g_zoneIndex;
     XZoneName *zone = &g_zoneNames[zoneIndex];
+
+    DbgPrint("[codxe][IW3][DB_LinkXAsset] zone=%s type=%s name=%s\n", zone->name, g_assetNames[asset->type],
+             DB_GetXAssetName(asset));
 
     for (size_t i = 0; i < ARRAYSIZE(assetLinkHandlers); ++i)
     {
         assetLinkHandlers[i](asset);
     }
 
-    // patch_mp has a higher database priority than ui_mp. Raise only the link-time priority of our UI zone so its
-    // replacement assets win, while preserving the zone's ui_mp allocation flag and native unload lifecycle.
+    // patch_mp normally takes priority over ui_mp. Raise our UI zone's priority while linking so its assets win.
+    // Restore the original flags afterward so the zone still unloads with ui_mp.
     const int originalZoneFlags = zone->flags;
     if (I_stricmp(zone->name, CODXE_UI_ZONE) == 0)
         zone->flags = DB_ZONE_DEV;
