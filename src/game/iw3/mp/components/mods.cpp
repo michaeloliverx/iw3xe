@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "mods.h"
 
-#include "command.h"
 #include "fastfiles.h"
 #include "ui_feeder.h"
 #include "ui_script.h"
@@ -68,8 +67,6 @@ dvar_s *ModList::FsGame = nullptr;
 
 ModList::ModList()
 {
-    command::add("codxe_reload_mod", ReloadCommand);
-
     UIScript::Add("LoadMods", LoadModsScript);
     UIScript::Add("RunMod", RunModScript);
     UIScript::Add("ClearMods", ClearModsScript);
@@ -220,13 +217,6 @@ void ModList::RunModScript(int /*localClientNum*/, const char ** /*args*/)
 void ModList::ClearModsScript(int /*localClientNum*/, const char ** /*args*/)
 {
     ClearMods();
-}
-
-void ModList::ReloadCommand()
-{
-    FastFiles::ReloadModZone();
-    if (!GetActiveName().empty())
-        Cbuf_AddText(0, "exec mod.cfg\n");
 }
 
 } // namespace mp

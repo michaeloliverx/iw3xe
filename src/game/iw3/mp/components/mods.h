@@ -30,7 +30,6 @@ class ModList : public Module
     static void LoadModsScript(int localClientNum, const char **args);
     static void RunModScript(int localClientNum, const char **args);
     static void ClearModsScript(int localClientNum, const char **args);
-    static void ReloadCommand();
 
     static std::vector<FeederEntry> Mods;
     static int CurrentMod;
