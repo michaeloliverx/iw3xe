@@ -21,7 +21,7 @@ const char *const FEEDER_BACKGROUND_END_MATERIAL = "button_highlight_end";
 std::vector<FeederEntry> usermaps;
 int selectedUsermap = 0;
 bool usermapsScanned = false;
-dvar_s *uiCodxeUsermapCounter = NULL;
+dvar_s *ui_codxe_usermap_counter = NULL;
 
 std::string ReadDisplayName(const std::string &descriptionPath, const std::string &fallback)
 {
@@ -54,7 +54,7 @@ bool ContainsUsermap(const std::string &name)
 
 void UpdateUsermapCounter()
 {
-    if (!uiCodxeUsermapCounter)
+    if (!ui_codxe_usermap_counter)
         return;
 
     char counter[32] = "";
@@ -64,7 +64,7 @@ void UpdateUsermapCounter()
                     static_cast<unsigned int>(usermaps.size()));
     }
 
-    Dvar_SetStringFromSource(uiCodxeUsermapCounter, counter, DVAR_SOURCE_INTERNAL);
+    Dvar_SetStringFromSource(ui_codxe_usermap_counter, counter, DVAR_SOURCE_INTERNAL);
 }
 
 void ScanUsermaps()
@@ -156,23 +156,23 @@ void UIFeeder::ApplyMapScript(int /*localClientNum*/, const char ** /*args*/)
     if (selectedUsermap < 0 || selectedUsermap >= static_cast<int>(usermaps.size()))
         return;
 
-    dvar_s *uiMapname = Dvar_FindMalleableVar("ui_mapname");
-    if (!uiMapname)
+    dvar_s *ui_mapname = Dvar_FindMalleableVar("ui_mapname");
+    if (!ui_mapname)
     {
         DbgPrint("[codxe][IW3][UIFeeder] Could not find ui_mapname\n");
         return;
     }
 
     const FeederEntry &usermap = usermaps[selectedUsermap];
-    Dvar_SetStringFromSource(uiMapname, usermap.name.c_str(), DVAR_SOURCE_INTERNAL);
+    Dvar_SetStringFromSource(ui_mapname, usermap.name.c_str(), DVAR_SOURCE_INTERNAL);
     Party_SetDisplayMapName(usermap.name.c_str());
 
-    dvar_s *uiMapnameText = Dvar_FindMalleableVar("ui_mapname_text");
-    if (!uiMapnameText)
-        uiMapnameText = Dvar_RegisterString("ui_mapname_text", "", DVAR_FLAG_NONE, "The selected map display name");
+    dvar_s *ui_mapname_text = Dvar_FindMalleableVar("ui_mapname_text");
+    if (!ui_mapname_text)
+        ui_mapname_text = Dvar_RegisterString("ui_mapname_text", "", DVAR_FLAG_NONE, "The selected map display name");
 
-    if (uiMapnameText)
-        Dvar_SetStringFromSource(uiMapnameText, usermap.displayName.c_str(), DVAR_SOURCE_INTERNAL);
+    if (ui_mapname_text)
+        Dvar_SetStringFromSource(ui_mapname_text, usermap.displayName.c_str(), DVAR_SOURCE_INTERNAL);
 
     DbgPrint("[codxe][IW3][UIFeeder] Set selected usermap: %s\n", usermap.name.c_str());
 }
@@ -203,7 +203,7 @@ void UIFeeder::SetSelectedIndex(float feederID, int index)
 
 void UIFeeder::OnDvarInit()
 {
-    uiCodxeUsermapCounter =
+    ui_codxe_usermap_counter =
         Dvar_RegisterString("ui_codxe_usermap_counter", "", DVAR_FLAG_NONE, "The selected custom map index");
 }
 
