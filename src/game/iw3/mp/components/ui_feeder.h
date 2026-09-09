@@ -20,7 +20,7 @@ class UIFeeder : public Module
   private:
     friend class UIScript;
 
-    static void ApplyInitialMapScript(int localClientNum, const char **args);
+    static void LoadUsermapsScript(int localClientNum, const char **args);
     static void ApplyMapScript(int localClientNum, const char **args);
 
     static int UI_FeederCount_Hook(int localClientNum, itemDef_s *item, float feederID);

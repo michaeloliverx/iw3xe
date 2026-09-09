@@ -145,7 +145,7 @@ void SelectUsermap(int index)
 
 } // namespace
 
-void UIFeeder::ApplyInitialMapScript(int /*localClientNum*/, const char ** /*args*/)
+void UIFeeder::LoadUsermapsScript(int /*localClientNum*/, const char ** /*args*/)
 {
     ScanUsermaps();
 }
