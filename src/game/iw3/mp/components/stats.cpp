@@ -111,9 +111,9 @@ void ExecuteCommand(const char *command)
     Cbuf_ExecuteBuffer(0, 0, commandLine);
 }
 
-void StatSet(int stat, int value)
+void StatSet(unsigned int controllerIndex, int stat, int value)
 {
-    ExecuteCommand(va(const_cast<char *>("statset %i %i"), stat, value));
+    LiveStorage_SetStat(controllerIndex, stat, value);
 }
 
 void BuildUnlockBitMasks(std::map<std::string, int> &attachmentBits, int &allCamoBits)
@@ -174,7 +174,7 @@ bool HasCamos(const char *category)
            Equals(category, "weapon_shotgun") || Equals(category, "weapon_lmg");
 }
 
-void UnlockItems(int &weaponCount, int &itemCount)
+void UnlockItems(unsigned int controllerIndex, int &weaponCount, int &itemCount)
 {
     const StringTable *statsTable = FindStringTable("mp/statstable.csv");
     if (!statsTable)
@@ -210,29 +210,29 @@ void UnlockItems(int &weaponCount, int &itemCount)
                 mask |= allCamoBits;
             }
 
-            StatSet(stat, mask);
+            StatSet(controllerIndex, stat, mask);
             ++weaponCount;
         }
         else if (Equals(category, "specialty") || Equals(category, "grenade") || Equals(category, "specialgrenade") ||
                  Equals(category, "inventory") || Equals(category, "null_specialty") || Equals(category, "feature"))
         {
-            StatSet(stat, 1);
+            StatSet(controllerIndex, stat, 1);
             ++itemCount;
         }
     }
 
     for (int stat = 256; stat <= 269; ++stat)
     {
-        StatSet(stat, 1);
+        StatSet(controllerIndex, stat, 1);
     }
 
     for (int stat = 270; stat <= 289; ++stat)
     {
-        StatSet(stat, 1);
+        StatSet(controllerIndex, stat, 1);
     }
 }
 
-void UnlockRank()
+void UnlockRank(unsigned int controllerIndex)
 {
     const StringTable *rankTable = FindStringTable("mp/ranktable.csv");
     int maxRank = 54;
@@ -261,17 +261,18 @@ void UnlockRank()
         }
     }
 
-    StatSet(2301, maxXp);
-    StatSet(2326, 10);
-    StatSet(2350, maxRank);
-    StatSet(2351, minXp);
-    StatSet(2352, maxXp);
-    StatSet(2353, maxXp);
-    StatSet(251, maxRank);
-    StatSet(252, maxRank);
+    StatSet(controllerIndex, 2301, maxXp);
+    StatSet(controllerIndex, 2326, 10);
+    StatSet(controllerIndex, 2350, maxRank);
+    StatSet(controllerIndex, 2351, minXp);
+    StatSet(controllerIndex, 2352, maxXp);
+    StatSet(controllerIndex, 2353, maxXp);
+    StatSet(controllerIndex, 251, maxRank);
+    StatSet(controllerIndex, 252, maxRank);
 }
 
-void FlushChallengeGroup(int stateStat, int progressStat, int maxProgress, int &challengeCount)
+void FlushChallengeGroup(unsigned int controllerIndex, int stateStat, int progressStat, int maxProgress,
+                         int &challengeCount)
 {
     if (stateStat <= 0 || progressStat <= 0)
     {
@@ -279,12 +280,12 @@ void FlushChallengeGroup(int stateStat, int progressStat, int maxProgress, int &
     }
 
     // GSC treats 255 as a completed challenge state; 1..n are active tiers.
-    StatSet(stateStat, 255);
-    StatSet(progressStat, maxProgress);
+    StatSet(controllerIndex, stateStat, 255);
+    StatSet(controllerIndex, progressStat, maxProgress);
     ++challengeCount;
 }
 
-void UnlockChallengeTable(const StringTable *challengeTable, int &challengeCount)
+void UnlockChallengeTable(unsigned int controllerIndex, const StringTable *challengeTable, int &challengeCount)
 {
     int stateStat = 0;
     int progressStat = 0;
@@ -295,7 +296,7 @@ void UnlockChallengeTable(const StringTable *challengeTable, int &challengeCount
         int newStateStat = 0;
         if (TryParseInt(TableLookup(challengeTable, row, 2), &newStateStat))
         {
-            FlushChallengeGroup(stateStat, progressStat, maxProgress, challengeCount);
+            FlushChallengeGroup(controllerIndex, stateStat, progressStat, maxProgress, challengeCount);
 
             stateStat = newStateStat;
             TryParseInt(TableLookup(challengeTable, row, 3), &progressStat);
@@ -314,10 +315,10 @@ void UnlockChallengeTable(const StringTable *challengeTable, int &challengeCount
         }
     }
 
-    FlushChallengeGroup(stateStat, progressStat, maxProgress, challengeCount);
+    FlushChallengeGroup(controllerIndex, stateStat, progressStat, maxProgress, challengeCount);
 }
 
-void UnlockChallenges(int &challengeCount)
+void UnlockChallenges(unsigned int controllerIndex, int &challengeCount)
 {
     const StringTable *challengeList = FindStringTable("mp/challengetable.csv");
     if (!challengeList)
@@ -341,23 +342,31 @@ void UnlockChallenges(int &challengeCount)
             continue;
         }
 
-        UnlockChallengeTable(challengeTable, challengeCount);
+        UnlockChallengeTable(controllerIndex, challengeTable, challengeCount);
     }
 }
 
 void Cmd_UnlockStats_f()
 {
+    stats::UnlockEverything(0);
+    ExecuteCommand("updategamerprofile");
+}
+} // namespace
+
+void stats::UnlockEverything(unsigned int controllerIndex)
+{
     int weaponCount = 0;
     int itemCount = 0;
     int challengeCount = 0;
 
-    UnlockRank();
-    UnlockItems(weaponCount, itemCount);
-    UnlockChallenges(challengeCount);
+    UnlockRank(controllerIndex);
+    UnlockItems(controllerIndex, weaponCount, itemCount);
+    UnlockChallenges(controllerIndex, challengeCount);
 
-    ExecuteCommand("updategamerprofile");
+    Com_Printf(CON_CHANNEL_DONT_FILTER,
+               "[codxe][IW3][Stats] Unlocked controller %u: %i weapons, %i items, %i challenges\n", controllerIndex,
+               weaponCount, itemCount, challengeCount);
 }
-} // namespace
 
 stats::stats()
 {

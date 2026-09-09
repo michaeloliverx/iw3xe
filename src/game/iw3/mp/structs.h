@@ -3738,5 +3738,27 @@ struct cgMedia_t
 };
 static_assert(sizeof(cgMedia_t) == 0x27A8, "");
 
+struct __declspec(align(2)) playerStatNetworkData
+{
+    unsigned __int8 playerStats[8192];
+    unsigned __int8 tempStatsBuffer[8192];
+    XSTORAGE_DOWNLOAD_TO_MEMORY_RESULTS statsResults;
+    wchar_t statsServerPath[256];
+    unsigned int statsServerPathLen;
+    bool statsFetched;
+    bool statWriteNeeded;
+    bool firstTimeRunning;
+};
+static_assert(sizeof(playerStatNetworkData) == 0x421C, "");
+
+struct OfflineStatsFile
+{
+    unsigned int magic;
+    unsigned int version;
+    unsigned int payloadSize;
+    unsigned __int8 playerStats[8192];
+};
+static_assert(sizeof(OfflineStatsFile) == 0x200C, "");
+
 } // namespace mp
 } // namespace iw3

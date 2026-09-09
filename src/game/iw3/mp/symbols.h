@@ -60,6 +60,10 @@ static auto CL_GamepadButtonEvent =
     reinterpret_cast<void (*)(int localClientNum, int controllerIndex, int key, int down, unsigned int time)>(
         0x822DD1E8);
 
+typedef int (*CL_ControllerIndexFromClientNum_t)(int localClientNum);
+static CL_ControllerIndexFromClientNum_t CL_ControllerIndexFromClientNum =
+    reinterpret_cast<CL_ControllerIndexFromClientNum_t>(0x822CEFB0);
+
 typedef void (*CL_Input_t)(int localClientNum);
 static CL_Input_t CL_Input = reinterpret_cast<CL_Input_t>(0x822DCBC8);
 
@@ -289,6 +293,22 @@ static auto Scr_AddSourceBuffer =
 typedef int (*I_stricmp_t)(const char *s0, const char *s1);
 static I_stricmp_t I_stricmp = reinterpret_cast<I_stricmp_t>(0x821CDCC8);
 
+typedef unsigned int (*LiveStorage_ChecksumGamerStats_t)(const unsigned __int8 *playerStatsData);
+static LiveStorage_ChecksumGamerStats_t LiveStorage_ChecksumGamerStats =
+    reinterpret_cast<LiveStorage_ChecksumGamerStats_t>(0x821775F0);
+
+typedef void (*LiveStorage_ReadStats_t)(unsigned int controllerIndex);
+static LiveStorage_ReadStats_t LiveStorage_ReadStats = reinterpret_cast<LiveStorage_ReadStats_t>(0x821A27F8);
+
+typedef void (*LiveStorage_ResetStats_t)(int controllerIndex);
+static LiveStorage_ResetStats_t LiveStorage_ResetStats = reinterpret_cast<LiveStorage_ResetStats_t>(0x821A2C48);
+
+typedef void (*LiveStorage_SetStat_t)(int controllerIndex, int index, unsigned int value);
+static LiveStorage_SetStat_t LiveStorage_SetStat = reinterpret_cast<LiveStorage_SetStat_t>(0x821A29D8);
+
+typedef void (*LiveStorage_UploadStats_t)(unsigned int controllerIndex);
+static LiveStorage_UploadStats_t LiveStorage_UploadStats = reinterpret_cast<LiveStorage_UploadStats_t>(0x821A2508);
+
 typedef int (*String_Parse_t)(const char **p, char *out, int len);
 static String_Parse_t String_Parse = reinterpret_cast<String_Parse_t>(0x821E11D0);
 
@@ -478,6 +498,9 @@ typedef void (*Cmd_Init_t)();
 static Cmd_Init_t Cmd_Init = reinterpret_cast<Cmd_Init_t>(0x8223B228);
 
 // Variables
+typedef playerStatNetworkData *controllerStatData_t;
+static controllerStatData_t controllerStatData = reinterpret_cast<controllerStatData_t>(0x84C5E238);
+
 static auto cgArray = reinterpret_cast<cg_s **>(0x823F28A0);
 static auto cgsArray = reinterpret_cast<cgs_t *>(0x823F2890);
 static auto clients = reinterpret_cast<clientActive_t **>(0x82435AB8);
