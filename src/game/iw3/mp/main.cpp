@@ -13,7 +13,6 @@
 #include "components/image_loader.h"
 #include "components/mpsp.h"
 #include "components/mods.h"
-#include "components/offline_stats.h"
 #include "components/pm.h"
 #include "components/scr_parser.h"
 #include "components/stats.h"
@@ -43,7 +42,6 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     RegisterModule(new cmds());
     RegisterModule(new console());
     RegisterModule(new ModList());
-    RegisterModule(new offline_stats());
     RegisterModule(new FastFiles());
     RegisterModule(new GSC());
     RegisterModule(new GSCFields());
@@ -52,7 +50,7 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     RegisterModule(new pm());
     RegisterModule(new mpsp());
     RegisterModule(new scr_parser());
-    RegisterModule(new stats());
+    RegisterModule(new Stats());
     RegisterModule(new sv_bots());
 }
 

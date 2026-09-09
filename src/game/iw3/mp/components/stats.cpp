@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "command.h"
 #include "stats.h"
+#include "ui_script.h"
 
 namespace iw3
 {
@@ -10,6 +11,12 @@ namespace mp
 {
 namespace
 {
+const unsigned int OFFLINE_STATS_MAGIC = 0x434F4458;
+const unsigned int OFFLINE_STATS_VERSION = 2;
+
+Detour LiveStorage_ReadStats_Detour;
+Detour LiveStorage_UploadStats_Detour;
+
 const char *TableLookup(const StringTable *table, int row, int column)
 {
     if (!table || row < 0 || column < 0 || row >= table->rowCount || column >= table->columnCount || !table->values)
@@ -346,14 +353,7 @@ void UnlockChallenges(unsigned int controllerIndex, int &challengeCount)
     }
 }
 
-void Cmd_UnlockStats_f()
-{
-    stats::UnlockEverything(0);
-    ExecuteCommand("updategamerprofile");
-}
-} // namespace
-
-void stats::UnlockEverything(unsigned int controllerIndex)
+void UnlockEverything(unsigned int controllerIndex)
 {
     int weaponCount = 0;
     int itemCount = 0;
@@ -368,13 +368,196 @@ void stats::UnlockEverything(unsigned int controllerIndex)
                weaponCount, itemCount, challengeCount);
 }
 
-stats::stats()
+void Cmd_UnlockStats_f()
 {
-    command::add("unlockstats", Cmd_UnlockStats_f);
+    UnlockEverything(0);
+    ExecuteCommand("updategamerprofile");
 }
 
-stats::~stats()
+bool IsValidControllerIndex(unsigned int controllerIndex)
 {
+    return controllerIndex < 4;
+}
+
+std::string GetStatsPath(unsigned int controllerIndex)
+{
+    char filename[64] = {};
+    XUID xuid = 0;
+
+    if (XUserGetXUID(controllerIndex, &xuid) == ERROR_SUCCESS && xuid != 0)
+    {
+        _snprintf_s(filename, ARRAYSIZE(filename), _TRUNCATE, "%016I64X.stat", xuid);
+    }
+    else
+    {
+        _snprintf_s(filename, ARRAYSIZE(filename), _TRUNCATE, "controller_%u.stat", controllerIndex);
+    }
+
+    return filesystem::JoinPath("game:\\_codxe\\players\\iw3", filename);
+}
+
+bool LoadStats(unsigned int controllerIndex)
+{
+    if (!IsValidControllerIndex(controllerIndex))
+        return false;
+
+    const std::string path = GetStatsPath(controllerIndex);
+    const std::string contents = filesystem::ReadFileToString(path);
+    if (contents.size() != sizeof(OfflineStatsFile))
+        return false;
+
+    const OfflineStatsFile *file = reinterpret_cast<const OfflineStatsFile *>(contents.data());
+    if (file->magic != OFFLINE_STATS_MAGIC || file->version != OFFLINE_STATS_VERSION ||
+        file->payloadSize != sizeof(file->playerStats))
+    {
+        Com_PrintWarning(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid offline header in %s\n", path.c_str());
+        return false;
+    }
+
+    const unsigned int storedChecksum = *reinterpret_cast<const unsigned int *>(file->playerStats);
+    const unsigned int calculatedChecksum = LiveStorage_ChecksumGamerStats(&file->playerStats[4]);
+    if (storedChecksum != calculatedChecksum)
+    {
+        Com_PrintWarning(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid offline checksum in %s\n", path.c_str());
+        return false;
+    }
+
+    playerStatNetworkData &statData = controllerStatData[controllerIndex];
+    std::memcpy(statData.playerStats, file->playerStats, sizeof(statData.playerStats));
+    statData.statsFetched = true;
+    statData.statWriteNeeded = false;
+    statData.firstTimeRunning = false;
+
+    Com_Printf(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Loaded controller %u from %s\n", controllerIndex,
+               path.c_str());
+    return true;
+}
+
+bool SaveStats(unsigned int controllerIndex)
+{
+    if (!IsValidControllerIndex(controllerIndex))
+        return false;
+
+    playerStatNetworkData &statData = controllerStatData[controllerIndex];
+    if (!statData.statsFetched)
+        return false;
+
+    *reinterpret_cast<unsigned int *>(statData.playerStats) = LiveStorage_ChecksumGamerStats(&statData.playerStats[4]);
+
+    OfflineStatsFile file = {};
+    file.magic = OFFLINE_STATS_MAGIC;
+    file.version = OFFLINE_STATS_VERSION;
+    file.payloadSize = sizeof(file.playerStats);
+    std::memcpy(file.playerStats, statData.playerStats, sizeof(file.playerStats));
+
+    const std::string path = GetStatsPath(controllerIndex);
+    if (!filesystem::WriteFileToDisk(path.c_str(), reinterpret_cast<const char *>(&file), sizeof(file)))
+    {
+        Com_PrintError(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Failed to save controller %u to %s\n",
+                       controllerIndex, path.c_str());
+        return false;
+    }
+
+    statData.statWriteNeeded = false;
+    statData.firstTimeRunning = false;
+    Com_Printf(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Saved controller %u to %s\n", controllerIndex,
+               path.c_str());
+    return true;
+}
+
+void InitializeStats(unsigned int controllerIndex)
+{
+    playerStatNetworkData &statData = controllerStatData[controllerIndex];
+    statData.statsFetched = true;
+    statData.firstTimeRunning = true;
+    LiveStorage_ResetStats(controllerIndex);
+    UnlockEverything(controllerIndex);
+    SaveStats(controllerIndex);
+}
+
+void LoadOrInitializeStats(unsigned int controllerIndex)
+{
+    if (!IsValidControllerIndex(controllerIndex))
+        return;
+
+    if (!LoadStats(controllerIndex))
+    {
+        Com_Printf(CON_CHANNEL_DONT_FILTER,
+                   "[codxe][IW3][Stats] No valid local stats for controller %u; creating defaults\n", controllerIndex);
+        InitializeStats(controllerIndex);
+    }
+}
+
+bool IsOfflineGame()
+{
+    return Dvar_GetBool("systemlink") || Dvar_GetBool("splitscreen");
+}
+
+void LoadStatsScript(int localClientNum, const char ** /*args*/)
+{
+    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
+    if (!IsValidControllerIndex(controllerIndex))
+    {
+        Com_PrintError(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid controller %i for local client %i\n",
+                       controllerIndex, localClientNum);
+        return;
+    }
+
+    LoadOrInitializeStats(controllerIndex);
+}
+
+void OpenCreateAClassScript(int localClientNum, const char **args)
+{
+    LoadStatsScript(localClientNum, args);
+
+    const int controllerIndex = CL_ControllerIndexFromClientNum(localClientNum);
+    if (!IsValidControllerIndex(controllerIndex))
+        return;
+
+    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, "set ui_cac_ingame 0\n");
+    UI_OpenMenu(localClientNum, "live_cac_popup");
+}
+
+void LiveStorage_ReadStats_Hook(unsigned int controllerIndex)
+{
+    if (XUserGetSigninState(controllerIndex) != eXUserSigninState_SignedInToLive)
+    {
+        LoadOrInitializeStats(controllerIndex);
+        return;
+    }
+
+    LiveStorage_ReadStats_Detour.GetOriginal<LiveStorage_ReadStats_t>()(controllerIndex);
+}
+
+void LiveStorage_UploadStats_Hook(unsigned int controllerIndex)
+{
+    if (IsOfflineGame())
+    {
+        SaveStats(controllerIndex);
+        return;
+    }
+
+    LiveStorage_UploadStats_Detour.GetOriginal<LiveStorage_UploadStats_t>()(controllerIndex);
+}
+} // namespace
+
+Stats::Stats()
+{
+    command::add("unlockstats", Cmd_UnlockStats_f);
+    UIScript::Add("LoadOfflineStats", LoadStatsScript);
+    UIScript::Add("OpenOfflineCreateAClass", OpenCreateAClassScript);
+
+    LiveStorage_ReadStats_Detour = Detour(LiveStorage_ReadStats, LiveStorage_ReadStats_Hook);
+    LiveStorage_ReadStats_Detour.Install();
+
+    LiveStorage_UploadStats_Detour = Detour(LiveStorage_UploadStats, LiveStorage_UploadStats_Hook);
+    LiveStorage_UploadStats_Detour.Install();
+}
+
+Stats::~Stats()
+{
+    LiveStorage_ReadStats_Detour.Remove();
+    LiveStorage_UploadStats_Detour.Remove();
 }
 
 } // namespace mp

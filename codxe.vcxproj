@@ -117,7 +117,6 @@
       <ClCompile Include="src\game\iw3\mp\components\gsc_methods.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\fastfiles.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\mods.cpp" />
-      <ClCompile Include="src\game\iw3\mp\components\offline_stats.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\pm.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\image_loader.cpp" />
       <ClCompile Include="src\game\iw3\mp\components\ui_feeder.cpp" />
@@ -263,7 +262,6 @@
       <ClInclude Include="src\game\iw3\mp\components\gsc_methods.h" />
       <ClInclude Include="src\game\iw3\mp\components\fastfiles.h" />
       <ClInclude Include="src\game\iw3\mp\components\mods.h" />
-      <ClInclude Include="src\game\iw3\mp\components\offline_stats.h" />
       <ClInclude Include="src\game\iw3\mp\components\pm.h" />
       <ClInclude Include="src\game\iw3\mp\components\ui_feeder.h" />
       <ClInclude Include="src\game\iw3\mp\components\ui_script.h" />

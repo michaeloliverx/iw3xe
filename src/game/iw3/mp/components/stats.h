@@ -6,13 +6,11 @@ namespace iw3
 {
 namespace mp
 {
-class stats : public Module
+class Stats : public Module
 {
   public:
-    stats();
-    ~stats();
-
-    static void UnlockEverything(unsigned int controllerIndex);
+    Stats();
+    ~Stats();
 };
 } // namespace mp
 } // namespace iw3
