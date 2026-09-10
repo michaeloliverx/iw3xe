@@ -325,7 +325,7 @@ static DB_SetXAssetName_t DB_SetXAssetName = reinterpret_cast<DB_SetXAssetName_t
 typedef const char *(*DB_GetXAssetName_t)(const XAsset *asset);
 static DB_GetXAssetName_t DB_GetXAssetName = reinterpret_cast<DB_GetXAssetName_t>(0x822B3490);
 
-typedef XAssetEntry *(*DB_LinkXAssetEntry_t)(XAsset *asset, int allowOverride);
+typedef XAssetEntryPoolEntry *(*DB_LinkXAssetEntry_t)(XAssetEntryPoolEntry *newEntry, int allowOverride);
 static DB_LinkXAssetEntry_t DB_LinkXAssetEntry = reinterpret_cast<DB_LinkXAssetEntry_t>(0x8229FC50);
 
 typedef void (*DB_LoadXFileData_t)(unsigned __int8 *pos, unsigned int size);

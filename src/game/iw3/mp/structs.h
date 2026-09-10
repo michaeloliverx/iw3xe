@@ -1784,6 +1784,7 @@ struct XAsset
     XAssetType type;
     XAssetHeader header;
 };
+static_assert(sizeof(XAsset) == 0x8, "");
 
 struct XAssetEntry
 {
@@ -1794,12 +1795,19 @@ struct XAssetEntry
     unsigned __int16 nextOverride;
     unsigned __int16 usageFrame;
 };
+static_assert(sizeof(XAssetEntry) == 0x10, "");
+static_assert(offsetof(XAssetEntry, asset) == 0x0, "");
+static_assert(offsetof(XAssetEntry, zoneIndex) == 0x8, "");
+static_assert(offsetof(XAssetEntry, nextHash) == 0xA, "");
+static_assert(offsetof(XAssetEntry, nextOverride) == 0xC, "");
+static_assert(offsetof(XAssetEntry, usageFrame) == 0xE, "");
 
 union XAssetEntryPoolEntry
 {
     XAssetEntry entry;
     XAssetEntryPoolEntry *next;
 };
+static_assert(sizeof(XAssetEntryPoolEntry) == 0x10, "");
 
 enum svscmd_type : __int32
 {

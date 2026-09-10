@@ -157,11 +157,12 @@ void Events::UI_Refresh_Hook(int localClientNum)
 
 Detour Events::UI_Refresh_Detour;
 
-XAssetEntry *Events::DB_LinkXAssetEntry_Hook(XAsset *asset, int allowOverride)
+XAssetEntryPoolEntry *Events::DB_LinkXAssetEntry_Hook(XAssetEntryPoolEntry *newEntry, int allowOverride)
 {
-    // Deferred links pass an asset stored at the start of an XAssetEntry.
-    // g_zoneIndex may point to the next zone, so use the zone saved in that entry.
-    const unsigned int zoneIndex = allowOverride ? reinterpret_cast<XAssetEntry *>(asset)->zoneIndex : *g_zoneIndex;
+    XAsset *asset = &newEntry->entry.asset;
+
+    // Deferred entries already contain their source zone. New entries use the zone currently being loaded.
+    const unsigned int zoneIndex = allowOverride ? newEntry->entry.zoneIndex : *g_zoneIndex;
     XZoneName *zone = &g_zoneNames[zoneIndex];
 
     DbgPrint("[codxe][IW3][DB_LinkXAsset] zone=%s type=%s name=%s\n", zone->name, g_assetNames[asset->type],
@@ -178,7 +179,8 @@ XAssetEntry *Events::DB_LinkXAssetEntry_Hook(XAsset *asset, int allowOverride)
     if (I_stricmp(zone->name, CODXE_UI_ZONE) == 0)
         zone->flags = DB_ZONE_DEV;
 
-    XAssetEntry *entry = DB_LinkXAssetEntry_Detour.GetOriginal<DB_LinkXAssetEntry_t>()(asset, allowOverride);
+    XAssetEntryPoolEntry *entry =
+        DB_LinkXAssetEntry_Detour.GetOriginal<DB_LinkXAssetEntry_t>()(newEntry, allowOverride);
     zone->flags = originalZoneFlags;
     return entry;
 }
