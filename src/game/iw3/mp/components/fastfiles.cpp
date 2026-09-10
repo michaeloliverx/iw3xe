@@ -90,6 +90,17 @@ void DisableFastfileAuth()
     ppc::Nop(0x822B2D44);
 }
 
+bool DB_ReallocXAssetPool(XAssetType type, unsigned int newSize)
+{
+    void *poolEntry = malloc(newSize * DB_GetXAssetTypeSize(type));
+    if (!poolEntry)
+        return false;
+
+    DB_XAssetPool[type] = poolEntry;
+    g_poolSize[type] = newSize;
+    return true;
+}
+
 bool ReallocateUiAssetPools()
 {
     if (*g_anyFastFileLoaded)
@@ -98,25 +109,13 @@ bool ReallocateUiAssetPools()
         return false;
     }
 
-    void *menuListPool = malloc(CODXE_MENULIST_POOL_SIZE * DB_GetXAssetTypeSize(ASSET_TYPE_MENULIST));
-    void *menuPool = malloc(CODXE_MENU_POOL_SIZE * DB_GetXAssetTypeSize(ASSET_TYPE_MENU));
-    void *localizePool = malloc(CODXE_LOCALIZE_POOL_SIZE * DB_GetXAssetTypeSize(ASSET_TYPE_LOCALIZE_ENTRY));
-
-    if (!menuListPool || !menuPool || !localizePool)
+    if (!DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, CODXE_MENULIST_POOL_SIZE) ||
+        !DB_ReallocXAssetPool(ASSET_TYPE_MENU, CODXE_MENU_POOL_SIZE) ||
+        !DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, CODXE_LOCALIZE_POOL_SIZE))
     {
-        free(menuListPool);
-        free(menuPool);
-        free(localizePool);
         DbgPrint("[codxe][IW3][FastFiles] Failed to allocate expanded UI asset pools\n");
         return false;
     }
-
-    DB_XAssetPool[ASSET_TYPE_MENULIST] = menuListPool;
-    g_poolSize[ASSET_TYPE_MENULIST] = CODXE_MENULIST_POOL_SIZE;
-    DB_XAssetPool[ASSET_TYPE_MENU] = menuPool;
-    g_poolSize[ASSET_TYPE_MENU] = CODXE_MENU_POOL_SIZE;
-    DB_XAssetPool[ASSET_TYPE_LOCALIZE_ENTRY] = localizePool;
-    g_poolSize[ASSET_TYPE_LOCALIZE_ENTRY] = CODXE_LOCALIZE_POOL_SIZE;
 
     DbgPrint("[codxe][IW3][FastFiles] Expanded UI asset pools: menulist=%u menu=%u localize=%u\n",
              CODXE_MENULIST_POOL_SIZE, CODXE_MENU_POOL_SIZE, CODXE_LOCALIZE_POOL_SIZE);
