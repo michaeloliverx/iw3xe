@@ -29,6 +29,7 @@ class UIFeeder : public Module
     static void UI_FeederItemColor_Hook(int localClientNum, itemDef_s *item, float feederID, int index, int column,
                                         float *color);
     static void UI_FeederSelection_Hook(int localClientNum, float feederID, itemDef_s *item, int index);
+    static void UI_OverrideCursorPos_Hook(int localClientNum, itemDef_s *item);
     static void Item_ListBox_Scroll_Hook(int localClientNum, itemDef_s *item, int max, int scrollMax, int viewMax,
                                          int delta);
 
@@ -38,6 +39,7 @@ class UIFeeder : public Module
     static Detour UI_FeederItemColor_Detour;
     static Detour UI_FeederItemText_Detour;
     static Detour UI_FeederSelection_Detour;
+    static Detour UI_OverrideCursorPos_Detour;
     static Detour Item_ListBox_Scroll_Detour;
 };
 } // namespace mp

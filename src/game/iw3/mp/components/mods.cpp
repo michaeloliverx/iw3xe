@@ -136,6 +136,10 @@ void ModList::ClearMods()
 
 void ModList::ScanMods()
 {
+    std::string selectedName;
+    if (CurrentMod >= 0 && CurrentMod < static_cast<int>(Mods.size()))
+        selectedName = Mods[CurrentMod].name;
+
     Mods.clear();
     CurrentMod = 0;
     ModsScanned = true;
@@ -166,6 +170,17 @@ void ModList::ScanMods()
     FindClose(findHandle);
     std::sort(Mods.begin(), Mods.end(), [](const FeederEntry &left, const FeederEntry &right)
               { return I_stricmp(left.displayName.c_str(), right.displayName.c_str()) < 0; });
+
+    for (size_t i = 0; i < Mods.size(); ++i)
+    {
+        if (I_stricmp(Mods[i].name.c_str(), selectedName.c_str()) == 0)
+        {
+            CurrentMod = static_cast<int>(i);
+            break;
+        }
+    }
+
+    UIFeeder::SetSelectedIndex(MODS_FEEDER_ID, CurrentMod);
 
     DbgPrint("[codxe][IW3][ModList] Found %u mod(s) in %s\n", static_cast<unsigned int>(Mods.size()), MODS_DIRECTORY);
 }

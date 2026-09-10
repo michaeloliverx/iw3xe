@@ -69,6 +69,10 @@ void UpdateUsermapCounter()
 
 void ScanUsermaps()
 {
+    std::string selectedName;
+    if (selectedUsermap >= 0 && selectedUsermap < static_cast<int>(usermaps.size()))
+        selectedName = usermaps[selectedUsermap].name;
+
     usermaps.clear();
     selectedUsermap = 0;
     usermapsScanned = true;
@@ -108,6 +112,17 @@ void ScanUsermaps()
     FindClose(findHandle);
     std::sort(usermaps.begin(), usermaps.end(), [](const FeederEntry &left, const FeederEntry &right)
               { return I_stricmp(left.displayName.c_str(), right.displayName.c_str()) < 0; });
+
+    for (size_t i = 0; i < usermaps.size(); ++i)
+    {
+        if (I_stricmp(usermaps[i].name.c_str(), selectedName.c_str()) == 0)
+        {
+            selectedUsermap = static_cast<int>(i);
+            break;
+        }
+    }
+
+    UIFeeder::SetSelectedIndex(USERMAPS_FEEDER_ID, selectedUsermap);
     UpdateUsermapCounter();
 
     DbgPrint("[codxe][IW3][UIFeeder] Found %u usermap(s) in %s\n", static_cast<unsigned int>(usermaps.size()),
@@ -183,6 +198,7 @@ Detour UIFeeder::UI_FeederCount_Detour;
 Detour UIFeeder::UI_FeederItemColor_Detour;
 Detour UIFeeder::UI_FeederItemText_Detour;
 Detour UIFeeder::UI_FeederSelection_Detour;
+Detour UIFeeder::UI_OverrideCursorPos_Detour;
 Detour UIFeeder::Item_ListBox_Scroll_Detour;
 
 void UIFeeder::Add(float feederID, UIFeederGetItemCount_t getItemCount, UIFeederGetItemText_t getItemText,
@@ -289,10 +305,34 @@ void UIFeeder::UI_FeederSelection_Hook(int localClientNum, float feederID, itemD
     feeder->second.select(index);
 }
 
+void UIFeeder::UI_OverrideCursorPos_Hook(int localClientNum, itemDef_s *item)
+{
+    const std::map<float, UIFeederCallbacks>::const_iterator feeder =
+        item ? Feeders.find(item->special) : Feeders.end();
+    if (feeder == Feeders.end())
+    {
+        UI_OverrideCursorPos_Detour.GetOriginal<UI_OverrideCursorPos_t>()(localClientNum, item);
+        return;
+    }
+
+    if (localClientNum < 0 || localClientNum >= 4)
+        return;
+
+    const int count = feeder->second.getItemCount();
+    int index = SelectedIndices[item->special];
+    if (index < 0 || index >= count)
+    {
+        index = 0;
+        SetSelectedIndex(item->special, index);
+    }
+
+    item->cursorPos[localClientNum] = index;
+}
+
 void UIFeeder::Item_ListBox_Scroll_Hook(int localClientNum, itemDef_s *item, int max, int scrollMax, int viewMax,
                                         int delta)
 {
-    if (item && item->special == USERMAPS_FEEDER_ID && localClientNum >= 0 && localClientNum < 4 && max > 0)
+    if (item && Feeders.find(item->special) != Feeders.end() && localClientNum >= 0 && localClientNum < 4 && max > 0)
     {
         if (delta < 0 && item->cursorPos[localClientNum] == 0)
         {
@@ -327,6 +367,9 @@ UIFeeder::UIFeeder()
     UI_FeederSelection_Detour = Detour(UI_FeederSelection, UI_FeederSelection_Hook);
     UI_FeederSelection_Detour.Install();
 
+    UI_OverrideCursorPos_Detour = Detour(UI_OverrideCursorPos, UI_OverrideCursorPos_Hook);
+    UI_OverrideCursorPos_Detour.Install();
+
     Item_ListBox_Scroll_Detour = Detour(Item_ListBox_Scroll, Item_ListBox_Scroll_Hook);
     Item_ListBox_Scroll_Detour.Install();
 }
@@ -334,6 +377,7 @@ UIFeeder::UIFeeder()
 UIFeeder::~UIFeeder()
 {
     Item_ListBox_Scroll_Detour.Remove();
+    UI_OverrideCursorPos_Detour.Remove();
     UI_FeederSelection_Detour.Remove();
     UI_FeederItemText_Detour.Remove();
     UI_FeederItemColor_Detour.Remove();

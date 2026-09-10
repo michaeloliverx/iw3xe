@@ -246,6 +246,8 @@ typedef const char *(*UI_FeederItemText_t)(int localClientNum, itemDef_s *item, 
 static UI_FeederItemText_t UI_FeederItemText = reinterpret_cast<UI_FeederItemText_t>(0x821EDFB0);
 typedef void (*UI_FeederSelection_t)(int localClientNum, float feederID, itemDef_s *item, int index);
 static UI_FeederSelection_t UI_FeederSelection = reinterpret_cast<UI_FeederSelection_t>(0x821EBE50);
+typedef void (*UI_OverrideCursorPos_t)(int localClientNum, itemDef_s *item);
+static UI_OverrideCursorPos_t UI_OverrideCursorPos = reinterpret_cast<UI_OverrideCursorPos_t>(0x821EDC00);
 static auto UI_OpenMenu = reinterpret_cast<void (*)(int localClientNum, const char *menuName)>(0x821EA1E0);
 static auto UI_Refresh = reinterpret_cast<void (*)(int localClientNum)>(0x821F2F28);
 typedef void (*UI_RunMenuScript_t)(int localClientNum, const char **args, const char *actualScript);
