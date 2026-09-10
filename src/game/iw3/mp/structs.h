@@ -3779,14 +3779,5 @@ struct __declspec(align(2)) playerStatNetworkData
 };
 static_assert(sizeof(playerStatNetworkData) == 0x421C, "");
 
-struct OfflineStatsFile
-{
-    unsigned int magic;
-    unsigned int version;
-    unsigned int payloadSize;
-    unsigned __int8 playerStats[8192];
-};
-static_assert(sizeof(OfflineStatsFile) == 0x200C, "");
-
 } // namespace mp
 } // namespace iw3

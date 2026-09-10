@@ -10,8 +10,14 @@ namespace mp
 {
 namespace
 {
-const unsigned int OFFLINE_STATS_MAGIC = 0x434F4458;
-const unsigned int OFFLINE_STATS_VERSION = 2;
+struct OfflineStatsFile
+{
+    unsigned int version;
+    unsigned __int8 playerStats[8192];
+};
+static_assert(sizeof(OfflineStatsFile) == 0x2004, "");
+
+const unsigned int OFFLINE_STATS_VERSION = 1;
 
 Detour LiveStorage_ReadStats_Detour;
 Detour LiveStorage_UploadStats_Detour;
@@ -406,8 +412,7 @@ bool LoadStats(unsigned int controllerIndex)
         return false;
 
     const OfflineStatsFile *file = reinterpret_cast<const OfflineStatsFile *>(contents.data());
-    if (file->magic != OFFLINE_STATS_MAGIC || file->version != OFFLINE_STATS_VERSION ||
-        file->payloadSize != sizeof(file->playerStats))
+    if (file->version != OFFLINE_STATS_VERSION)
     {
         Com_PrintWarning(CON_CHANNEL_DONT_FILTER, "[codxe][IW3][Stats] Invalid offline header in %s\n", path.c_str());
         return false;
@@ -444,9 +449,7 @@ bool SaveStats(unsigned int controllerIndex)
     *reinterpret_cast<unsigned int *>(statData.playerStats) = LiveStorage_ChecksumGamerStats(&statData.playerStats[4]);
 
     OfflineStatsFile file = {};
-    file.magic = OFFLINE_STATS_MAGIC;
     file.version = OFFLINE_STATS_VERSION;
-    file.payloadSize = sizeof(file.playerStats);
     std::memcpy(file.playerStats, statData.playerStats, sizeof(file.playerStats));
 
     const std::string path = GetStatsPath(controllerIndex);
