@@ -10,12 +10,9 @@ namespace iw3
 namespace mp
 {
 const UIScriptEntry UIScript::Scripts[] = {
-    {"LoadMods", ModList::LoadModsScript},
-    {"RunMod", ModList::RunModScript},
-    {"ClearMods", ModList::ClearModsScript},
-    {"LoadOfflineStats", Stats::LoadStatsScript},
-    {"LoadUsermaps", UIFeeder::LoadUsermapsScript},
-    {"ApplyMap", UIFeeder::ApplyMapScript},
+    {"LoadMods", ModList::LoadModsScript},          {"RunMod", ModList::RunModScript},
+    {"ClearMods", ModList::ClearModsScript},        {"LoadOfflineStats", Stats::LoadStatsScript},
+    {"LoadUsermaps", UIFeeder::LoadUsermapsScript}, {"ApplyMap", UIFeeder::ApplyMapScript},
 };
 
 Detour UIScript::UI_RunMenuScript_Detour;
