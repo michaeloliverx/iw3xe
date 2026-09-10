@@ -16,11 +16,6 @@ const char *const CODXE_UI_ZONE = "codxe_ui_mp";
 const char *const CODXE_ZONE_DIRECTORY = "game:\\_codxe\\zone";
 const char *const USERMAPS_DIRECTORY = "game:\\_codxe\\usermaps";
 const char *const FASTFILE_EXTENSION = ".ff";
-const unsigned int CODXE_MENULIST_POOL_SIZE = 256;
-const unsigned int CODXE_MENU_POOL_SIZE = 1024;
-const unsigned int CODXE_LOCALIZE_POOL_SIZE = 14000;
-
-bool codxeUiPoolsReady = false;
 
 bool IsSafeZoneName(const char *name)
 {
@@ -90,37 +85,19 @@ void DisableFastfileAuth()
     ppc::Nop(0x822B2D44);
 }
 
-bool DB_ReallocXAssetPool(XAssetType type, unsigned int newSize)
+void DB_ReallocXAssetPool(XAssetType type, unsigned int newSize)
 {
     void *poolEntry = malloc(newSize * DB_GetXAssetTypeSize(type));
     if (!poolEntry)
-        return false;
+    {
+        Com_Error(ERR_FATAL, "Failed to allocate expanded asset pool %d (%u entries)", type, newSize);
+        return;
+    }
 
     DB_XAssetPool[type] = poolEntry;
     g_poolSize[type] = newSize;
-    return true;
 }
 
-bool ReallocateUiAssetPools()
-{
-    if (*g_anyFastFileLoaded)
-    {
-        DbgPrint("[codxe][IW3][FastFiles] Cannot expand UI asset pools after fastfile loading has started\n");
-        return false;
-    }
-
-    if (!DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, CODXE_MENULIST_POOL_SIZE) ||
-        !DB_ReallocXAssetPool(ASSET_TYPE_MENU, CODXE_MENU_POOL_SIZE) ||
-        !DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, CODXE_LOCALIZE_POOL_SIZE))
-    {
-        DbgPrint("[codxe][IW3][FastFiles] Failed to allocate expanded UI asset pools\n");
-        return false;
-    }
-
-    DbgPrint("[codxe][IW3][FastFiles] Expanded UI asset pools: menulist=%u menu=%u localize=%u\n",
-             CODXE_MENULIST_POOL_SIZE, CODXE_MENU_POOL_SIZE, CODXE_LOCALIZE_POOL_SIZE);
-    return true;
-}
 } // namespace
 
 Detour FastFiles::DB_BuildOSPath_Detour;
@@ -192,9 +169,9 @@ void FastFiles::DB_LoadXAssets_Hook(XZoneInfo *zoneInfo, unsigned int zoneCount,
     const std::string codxeUiFastfile = GetCodxeZoneFastfilePath(CODXE_UI_ZONE);
     const XZoneInfo *stockCommonZone = FindZone(zoneInfo, zoneCount, "common_mp");
     const XZoneInfo *stockUiZone = FindZone(zoneInfo, zoneCount, "ui_mp");
-    const bool injectCommon = codxeUiPoolsReady && filesystem::FileExists(codxeCommonFastfile.c_str()) &&
-                              stockCommonZone && !ContainsZone(zoneInfo, zoneCount, CODXE_COMMON_ZONE);
-    const bool injectUi = codxeUiPoolsReady && filesystem::FileExists(codxeUiFastfile.c_str()) && stockUiZone &&
+    const bool injectCommon = filesystem::FileExists(codxeCommonFastfile.c_str()) && stockCommonZone &&
+                              !ContainsZone(zoneInfo, zoneCount, CODXE_COMMON_ZONE);
+    const bool injectUi = filesystem::FileExists(codxeUiFastfile.c_str()) && stockUiZone &&
                           !ContainsZone(zoneInfo, zoneCount, CODXE_UI_ZONE);
     const bool injectMod =
         HasModFastfile() && IsInitialZoneBatch(zoneInfo, zoneCount) && !ContainsZone(zoneInfo, zoneCount, MOD_ZONE);
@@ -271,7 +248,9 @@ FastFiles::FastFiles()
 {
     DisableFastfileAuth();
 
-    codxeUiPoolsReady = ReallocateUiAssetPools();
+    DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, 256);
+    DB_ReallocXAssetPool(ASSET_TYPE_MENU, 1024);
+    DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, 14000);
 
     DB_BuildOSPath_Detour = Detour(DB_BuildOSPath, DB_BuildOSPath_Hook);
     DB_BuildOSPath_Detour.Install();
