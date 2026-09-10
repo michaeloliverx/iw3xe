@@ -187,7 +187,7 @@ void UIFeeder::ApplyMapScript(int /*localClientNum*/, const char ** /*args*/)
         ui_mapname_text = Dvar_RegisterString("ui_mapname_text", "", DVAR_FLAG_NONE, "The selected map display name");
 
     if (ui_mapname_text)
-        Dvar_SetStringFromSource(ui_mapname_text, usermap.displayName.c_str(), DVAR_SOURCE_INTERNAL);
+        Dvar_SetStringFromSource(ui_mapname_text, usermap.name.c_str(), DVAR_SOURCE_INTERNAL);
 
     DbgPrint("[codxe][IW3][UIFeeder] Set selected usermap: %s\n", usermap.name.c_str());
 }
