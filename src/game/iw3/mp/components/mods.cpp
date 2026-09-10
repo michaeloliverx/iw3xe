@@ -29,12 +29,6 @@ bool IsSafeModName(const char *name)
     return true;
 }
 
-bool DirectoryExists(const std::string &path)
-{
-    const DWORD attributes = GetFileAttributesA(path.c_str());
-    return attributes != static_cast<DWORD>(-1) && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-}
-
 std::string BuildFsGame(const char *name)
 {
     return std::string(FS_GAME_PREFIX) + name;
@@ -109,7 +103,7 @@ bool ModList::RunMod(const char *name)
         return false;
 
     const std::string modPath = filesystem::JoinPath(MODS_DIRECTORY, name);
-    if (!DirectoryExists(modPath))
+    if (!filesystem::DirectoryExists(modPath.c_str()))
     {
         Com_PrintError(CON_CHANNEL_ERROR, "Mod directory does not exist: %s\n", modPath.c_str());
         return false;

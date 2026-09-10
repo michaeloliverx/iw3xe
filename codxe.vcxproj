@@ -89,6 +89,7 @@
       <ClCompile Include="src\common\map_ents.cpp" />
       <ClCompile Include="src\common\ppc.cpp" />
       <ClCompile Include="src\common\script_files.cpp" />
+      <ClCompile Include="src\common\string_utils.cpp" />
 
       <ClCompile Include="src\image\xenos_texture.cpp" />
 
@@ -231,6 +232,7 @@
       <ClInclude Include="src\common\map_ents.h" />
       <ClInclude Include="src\common\ppc.h" />
       <ClInclude Include="src\common\script_files.h" />
+      <ClInclude Include="src\common\string_utils.h" />
 
       <ClInclude Include="src\image\xenos_texture.h" />
 

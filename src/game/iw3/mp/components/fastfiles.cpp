@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "fastfiles.h"
 
+#include "common/string_utils.h"
 #include "mods.h"
 
 namespace iw3
@@ -30,12 +31,6 @@ bool IsSafeZoneName(const char *name)
     }
 
     return true;
-}
-
-bool EndsWith(const std::string &value, const char *suffix)
-{
-    const size_t suffixLength = std::strlen(suffix);
-    return value.length() >= suffixLength && I_stricmp(value.c_str() + value.length() - suffixLength, suffix) == 0;
 }
 
 std::string GetCodxeZoneFastfilePath(const char *zoneName)
@@ -125,11 +120,11 @@ std::string FastFiles::GetUsermapFastfilePath(const char *zoneName)
         return std::string();
 
     std::string filename = zoneName;
-    if (EndsWith(filename, ".ff"))
+    if (string_utils::EndsWith(filename, ".ff"))
         filename.erase(filename.length() - 3);
 
     std::string directory = filename;
-    if (EndsWith(directory, "_load"))
+    if (string_utils::EndsWith(directory, "_load"))
         directory.erase(directory.length() - 5);
 
     const std::string usermapDirectory = filesystem::JoinPath(USERMAPS_DIRECTORY, directory.c_str());
@@ -248,9 +243,9 @@ FastFiles::FastFiles()
 {
     DisableFastfileAuth();
 
-    DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, 256);
-    DB_ReallocXAssetPool(ASSET_TYPE_MENU, 1024);
-    DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, 14000);
+    DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, 256);         // Stock: 128
+    DB_ReallocXAssetPool(ASSET_TYPE_MENU, 1024);            // Stock: 512
+    DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, 14000); // Stock: 6144
 
     DB_BuildOSPath_Detour = Detour(DB_BuildOSPath, DB_BuildOSPath_Hook);
     DB_BuildOSPath_Detour.Install();
