@@ -246,6 +246,7 @@ FastFiles::FastFiles()
     DB_ReallocXAssetPool(ASSET_TYPE_MENULIST, 256);         // Stock: 128
     DB_ReallocXAssetPool(ASSET_TYPE_MENU, 1024);            // Stock: 512
     DB_ReallocXAssetPool(ASSET_TYPE_LOCALIZE_ENTRY, 14000); // Stock: 6144
+    DB_ReallocXAssetPool(ASSET_TYPE_FX, 600);               // Stock: 400
 
     DB_BuildOSPath_Detour = Detour(DB_BuildOSPath, DB_BuildOSPath_Hook);
     DB_BuildOSPath_Detour.Install();
