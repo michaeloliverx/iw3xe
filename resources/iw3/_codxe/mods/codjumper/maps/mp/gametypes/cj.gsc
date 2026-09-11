@@ -103,7 +103,69 @@ onPlayerSpawned()
 		self onPlayerSpawnedDvars();
 
 		self.entityflags |= 1; // ENTITY_FLAG_GODMODE
+
+		self thread watchC4();
 	}
+}
+
+WatchC4()
+{
+	for(;;)
+	{
+		// Wait until the C4 is actually thrown
+		self waittill( "grenade_fire", c4, weapname );
+		if(weapname != "c4_mp")
+			continue;
+
+		if(!isdefined(c4))
+		{
+			self iprintln("^1Error: C4 not defined");
+			continue;
+		}
+
+		if(!C4HasSavedPosition() || isdefined(self.c4_next_position_save) && self.c4_next_position_save == true)
+		{
+			// Record the initial origin
+			last_origin = c4.origin;
+
+			// Small wait to allow the C4 to move a bit
+			wait 0.05;
+
+			// Wait until it stops moving
+			for(;;)
+			{
+				origin = c4.origin;
+				if(origin == last_origin)
+					break;
+				else
+					last_origin = origin;
+
+				wait 0.1;
+			}
+
+			// Record the position
+			self.c4_last_origin = c4.origin;
+			self.c4_last_angles = c4.angles;
+			self.c4_next_position_save = false;
+			self iprintln("^2C4 position saved");
+		}
+		else
+		{
+			c4.origin = self.c4_last_origin;
+			c4.angles = self.c4_last_angles;
+		}
+	}
+}
+
+C4HasSavedPosition()
+{
+	return isdefined(self.c4_last_origin) && isdefined(self.c4_last_angles);
+}
+
+C4SetPosition()
+{
+	self iprintln("^3Next C4 thrown will be saved");
+	self.c4_next_position_save = true;
 }
 
 removeGrenades()
@@ -2367,6 +2429,7 @@ generateMenuOptions()
 	self addMenuOption("player_settings", "Lean Toggle", ::LeanBindToggle);
 	self addMenuOption("player_settings", "Cycle Visions", ::CycleVision);
 	self addMenuOption("player_settings", "Revert Vision", ::RevertVision);
+	self addMenuOption("player_settings", "Set C4 Position", ::C4SetPosition);
 
 	// Bot submenu
 	self addMenuOption("main", "Bot Menu", ::menuAction, "CHANGE_MENU", "bot_menu");
