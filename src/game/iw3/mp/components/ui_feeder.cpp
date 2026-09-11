@@ -198,7 +198,6 @@ Detour UIFeeder::UI_FeederCount_Detour;
 Detour UIFeeder::UI_FeederItemColor_Detour;
 Detour UIFeeder::UI_FeederItemText_Detour;
 Detour UIFeeder::UI_FeederSelection_Detour;
-Detour UIFeeder::UI_OverrideCursorPos_Detour;
 Detour UIFeeder::Item_ListBox_Scroll_Detour;
 
 void UIFeeder::Add(float feederID, UIFeederGetItemCount_t getItemCount, UIFeederGetItemText_t getItemText,
@@ -226,10 +225,23 @@ void UIFeeder::OnDvarInit()
 int UIFeeder::UI_FeederCount_Hook(int localClientNum, itemDef_s *item, float feederID)
 {
     const std::map<float, UIFeederCallbacks>::const_iterator feeder = Feeders.find(feederID);
-    if (feeder != Feeders.end())
-        return feeder->second.getItemCount();
+    if (feeder == Feeders.end())
+        return UI_FeederCount_Detour.GetOriginal<UI_FeederCount_t>()(localClientNum, item, feederID);
 
-    return UI_FeederCount_Detour.GetOriginal<UI_FeederCount_t>()(localClientNum, item, feederID);
+    const int count = feeder->second.getItemCount();
+    if (item && localClientNum >= 0 && localClientNum < 4)
+    {
+        int index = SelectedIndices[feederID];
+        if (index < 0 || index >= count)
+        {
+            index = 0;
+            SetSelectedIndex(feederID, index);
+        }
+
+        item->cursorPos[localClientNum] = index;
+    }
+
+    return count;
 }
 
 const char *UIFeeder::UI_FeederItemText_Hook(int localClientNum, itemDef_s *item, float feederID, int index,
@@ -305,30 +317,6 @@ void UIFeeder::UI_FeederSelection_Hook(int localClientNum, float feederID, itemD
     feeder->second.select(index);
 }
 
-void UIFeeder::UI_OverrideCursorPos_Hook(int localClientNum, itemDef_s *item)
-{
-    const std::map<float, UIFeederCallbacks>::const_iterator feeder =
-        item ? Feeders.find(item->special) : Feeders.end();
-    if (feeder == Feeders.end())
-    {
-        UI_OverrideCursorPos_Detour.GetOriginal<UI_OverrideCursorPos_t>()(localClientNum, item);
-        return;
-    }
-
-    if (localClientNum < 0 || localClientNum >= 4)
-        return;
-
-    const int count = feeder->second.getItemCount();
-    int index = SelectedIndices[item->special];
-    if (index < 0 || index >= count)
-    {
-        index = 0;
-        SetSelectedIndex(item->special, index);
-    }
-
-    item->cursorPos[localClientNum] = index;
-}
-
 void UIFeeder::Item_ListBox_Scroll_Hook(int localClientNum, itemDef_s *item, int max, int scrollMax, int viewMax,
                                         int delta)
 {
@@ -367,9 +355,6 @@ UIFeeder::UIFeeder()
     UI_FeederSelection_Detour = Detour(UI_FeederSelection, UI_FeederSelection_Hook);
     UI_FeederSelection_Detour.Install();
 
-    UI_OverrideCursorPos_Detour = Detour(UI_OverrideCursorPos, UI_OverrideCursorPos_Hook);
-    UI_OverrideCursorPos_Detour.Install();
-
     Item_ListBox_Scroll_Detour = Detour(Item_ListBox_Scroll, Item_ListBox_Scroll_Hook);
     Item_ListBox_Scroll_Detour.Install();
 }
@@ -377,7 +362,6 @@ UIFeeder::UIFeeder()
 UIFeeder::~UIFeeder()
 {
     Item_ListBox_Scroll_Detour.Remove();
-    UI_OverrideCursorPos_Detour.Remove();
     UI_FeederSelection_Detour.Remove();
     UI_FeederItemText_Detour.Remove();
     UI_FeederItemColor_Detour.Remove();
