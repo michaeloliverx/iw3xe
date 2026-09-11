@@ -13,6 +13,7 @@
 #include "components/image_loader.h"
 #include "components/mpsp.h"
 #include "components/mods.h"
+#include "components/patches.h"
 #include "components/pm.h"
 #include "components/scr_parser.h"
 #include "components/stats.h"
@@ -31,6 +32,7 @@ IW3_MP_Plugin::IW3_MP_Plugin()
     *(volatile uint8_t *)0x821FB069 = 0xE1;
 
     // Special modules need to be registered first
+    RegisterModule(new Patches());
     RegisterModule(new Events());
     RegisterModule(new command());
     RegisterModule(new UIScript());
