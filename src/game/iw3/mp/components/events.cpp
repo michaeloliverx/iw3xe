@@ -165,8 +165,8 @@ XAssetEntryPoolEntry *Events::DB_LinkXAssetEntry_Hook(XAssetEntryPoolEntry *newE
     const unsigned int zoneIndex = allowOverride ? newEntry->entry.zoneIndex : *g_zoneIndex;
     XZoneName *zone = &g_zoneNames[zoneIndex];
 
-    DbgPrint("[codxe][IW3][DB_LinkXAsset] zone=%s type=%s name=%s\n", zone->name, g_assetNames[asset->type],
-             DB_GetXAssetName(asset));
+    // DbgPrint("[codxe][IW3][DB_LinkXAsset] zone=%s type=%s name=%s\n", zone->name, g_assetNames[asset->type],
+    //          DB_GetXAssetName(asset));
 
     for (size_t i = 0; i < ARRAYSIZE(assetLinkHandlers); ++i)
     {
